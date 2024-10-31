@@ -1,7 +1,0 @@
-DROP TABLE IF EXISTS hashtags;
-CREATE TABLE hashtags(
-	hashtagId INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	hashtag VARCHAR(255) NOT NULL,
-	tweetId INT NOT NULL,
-	FOREIGN KEY (tweetId) REFERENCES tweets(tweetId)
-);
