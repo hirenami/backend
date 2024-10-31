@@ -108,7 +108,7 @@ type Dm struct {
 	Createdat  time.Time      `json:"createdat"`
 	Content    string         `json:"content"`
 	MediaUrl   sql.NullString `json:"media_url"`
-	Status     NullDmsStatus  `json:"status"`
+	Status     DmsStatus      `json:"status"`
 }
 
 type Follow struct {
@@ -136,13 +136,13 @@ type Like struct {
 }
 
 type Notification struct {
-	Notificationsid int32                   `json:"notificationsid"`
-	Senderid        string                  `json:"senderid"`
-	Replyid         string                  `json:"replyid"`
-	Type            string                  `json:"type"`
-	Createdat       time.Time               `json:"createdat"`
-	Status          NullNotificationsStatus `json:"status"`
-	Contentid       sql.NullInt32           `json:"contentid"`
+	Notificationsid int32               `json:"notificationsid"`
+	Senderid        string              `json:"senderid"`
+	Replyid         string              `json:"replyid"`
+	Type            string              `json:"type"`
+	Createdat       time.Time           `json:"createdat"`
+	Status          NotificationsStatus `json:"status"`
+	Contentid       sql.NullInt32       `json:"contentid"`
 }
 
 type Relation struct {
@@ -154,8 +154,8 @@ type Tweet struct {
 	Tweetid     int32          `json:"tweetid"`
 	Userid      string         `json:"userid"`
 	Retweetid   sql.NullInt32  `json:"retweetid"`
-	Isquote     sql.NullBool   `json:"isquote"`
-	Isreply     sql.NullBool   `json:"isreply"`
+	Isquote     bool           `json:"isquote"`
+	Isreply     bool           `json:"isreply"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	Content     string         `json:"content"`
@@ -164,7 +164,7 @@ type Tweet struct {
 	Retweets    int32          `json:"retweets"`
 	Replies     int32          `json:"replies"`
 	Impressions int32          `json:"impressions"`
-	Isdeleted   sql.NullBool   `json:"isdeleted"`
+	Isdeleted   bool           `json:"isdeleted"`
 }
 
 type User struct {

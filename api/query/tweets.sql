@@ -23,7 +23,7 @@ WHERE tweetId = ?;
 INSERT INTO tweets (
 	userId, retweetId, content
 ) VALUES (
-	?, ? , 'retweet'
+	?, ? , ''
 );
 
 -- name: CreateQuote :exec

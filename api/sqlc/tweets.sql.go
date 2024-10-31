@@ -39,7 +39,7 @@ const createRetweet = `-- name: CreateRetweet :exec
 INSERT INTO tweets (
 	userId, retweetId, content
 ) VALUES (
-	?, ? , 'retweet'
+	?, ? , ''
 )
 `
 

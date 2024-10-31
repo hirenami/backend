@@ -6,7 +6,7 @@ CREATE TABLE dms (
     createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     content VARCHAR(255) NOT NULL,
     media_url VARCHAR(255) DEFAULT NULL,
-	status ENUM('unread', 'read') DEFAULT 'unread',
+	status ENUM('unread', 'read') NOT NULL DEFAULT 'unread',
     FOREIGN KEY (senderId) REFERENCES users(userId),     -- 外部キー制約を追加
     FOREIGN KEY (receiverId) REFERENCES users(userId)     -- 外部キー制約を追加
 );
