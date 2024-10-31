@@ -1,0 +1,14 @@
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  firebaseUid VARCHAR(128) PRIMARY KEY, 	-- FIREBASE UID
+  userId VARCHAR(36) NOT NULL UNIQUE, 	-- USER Userid
+  username VARCHAR(255) NOT NULL,
+  created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  header_image VARCHAR(255) NOT NULL,
+  icon_image VARCHAR(255) NOT NULL,
+  biography VARCHAR(255) DEFAULT NULL,
+  isPrivate BOOLEAN NOT NULL DEFAULT false,
+  isFrozen BOOLEAN  NOT NULL DEFAULT false,
+  isDeleted BOOLEAN NOT NULL DEFAULT false,
+  isAdmin BOOLEAN NOT NULL DEFAULT false
+);
