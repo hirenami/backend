@@ -25,8 +25,6 @@ func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	username := req.Username
 	userId := req.Userid
-	header_image := req.HeaderImage
-	icon_image := req.IconImage
 	ctx := context.Background()
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
@@ -34,7 +32,7 @@ func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		log.Println("User Userid not found in context")
 		return
 	}
-	err := c.Usecase.CreateAccount(ctx, firebaseUid, username, userId, header_image, icon_image)
+	err := c.Usecase.CreateAccount(ctx, firebaseUid, username, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

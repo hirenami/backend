@@ -7,7 +7,7 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) CreateAccount(ctx context.Context, firebaseUid string, username string, userId string, header_image ,icon_image string) error {
+func (u *Usecase) CreateAccount(ctx context.Context, firebaseUid string, username string, userId string) error {
 	//バリデーション
 	if username == "" {
 		return errors.New("username is required")
@@ -24,26 +24,6 @@ func (u *Usecase) CreateAccount(ctx context.Context, firebaseUid string, usernam
 
 	//Daoのメソッドを呼び出し
 	err = u.dao.CreateAccount(ctx, tx, firebaseUid, username, userId)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return err
-	}
-
-	//Daoのメソッドを呼び出し
-	err = u.dao.CreateHeaderImage(ctx, tx, userId, header_image)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return err
-	}
-
-	//Daoのメソッドを呼び出し
-	err = u.dao.CreateIconImage(ctx, tx, userId, icon_image)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
