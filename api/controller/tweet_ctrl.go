@@ -185,3 +185,38 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 	log.Default().Println("User Userid: ", userId)
 }
+
+// GET /tweet
+func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+
+	vars := mux.Vars(r)
+	log.Printf("Vars: %v\n", vars) // デバッグ用に出
+	tweetId := vars["tweetId"]
+	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
+	if err != nil {
+		// 変換エラーの処理
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	ctx := context.Background()
+	tweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	jsonData, err := json.Marshal(tweet)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
+}

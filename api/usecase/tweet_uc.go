@@ -254,3 +254,36 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sq
 
 	return tweets, nil
 }
+
+// GetTweet メソッドの実装
+func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Tweet, error) {
+	// トランザクションを開始
+	tx, err := u.dao.Begin()
+	if err != nil {
+		return sqlc.Tweet{}, err
+	}
+
+	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
+		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return sqlc.Tweet{}, err
+	} else if !bool {
+		return sqlc.Tweet{}, errors.New("tweet does not exist")
+	}
+
+	// daoのメソッドにトランザクションを渡して実行
+	tweet, err := u.dao.GetTweet(ctx, tx, tweetId)
+	if err != nil {
+		return sqlc.Tweet{}, err
+	}
+
+	// トランザクションをコミット
+	err = tx.Commit()
+	if err != nil {
+		return sqlc.Tweet{}, err
+	}
+
+	return tweet, nil
+}
