@@ -206,3 +206,37 @@ func (d *Dao) GetTweet(ctx context.Context, tx *sql.Tx, tweetId int32) (sqlc.Twe
 
 	return txQueries.GetTweet(ctx, tweetId)
 }
+
+func (d *Dao) IsRetweet (ctx context.Context, tx *sql.Tx,userId string, retweetId int32) (bool, error) {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	RetweetId := sql.NullInt32{
+		Int32: retweetId,
+		Valid: true,
+	}
+
+	arg := sqlc.IsRetweetParams{
+		Userid: userId,
+		Retweetid: RetweetId,
+	}
+
+	return txQueries.IsRetweet(ctx, arg)
+}
+
+func (d *Dao) GetTweetId(ctx context.Context, tx *sql.Tx, userId string, retweetId int32) (int32, error) {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	RetweetId := sql.NullInt32{
+		Int32: retweetId,
+		Valid: true,
+	}
+
+	arg := sqlc.GetTweetIdParams{
+		Userid: userId,
+		Retweetid: RetweetId,
+	}
+
+	return txQueries.GetTweetId(ctx, arg)
+}

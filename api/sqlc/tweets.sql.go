@@ -185,7 +185,7 @@ func (q *Queries) GetRetweets(ctx context.Context, retweetid sql.NullInt32) ([]s
 
 const getRetweetsCount = `-- name: GetRetweetsCount :one
 SELECT retweets FROM tweets
-WHERE tweetId = ?
+WHERE tweetId = ? and isDeleted=false
 `
 
 func (q *Queries) GetRetweetsCount(ctx context.Context, tweetid int32) (int32, error) {
@@ -220,6 +220,23 @@ func (q *Queries) GetTweet(ctx context.Context, tweetid int32) (Tweet, error) {
 		&i.Isdeleted,
 	)
 	return i, err
+}
+
+const getTweetId = `-- name: GetTweetId :one
+SELECT tweetId FROM tweets
+WHERE retweetId = ? and userId = ? and isDeleted = false
+`
+
+type GetTweetIdParams struct {
+	Retweetid sql.NullInt32 `json:"retweetid"`
+	Userid    string        `json:"userid"`
+}
+
+func (q *Queries) GetTweetId(ctx context.Context, arg GetTweetIdParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getTweetId, arg.Retweetid, arg.Userid)
+	var tweetid int32
+	err := row.Scan(&tweetid)
+	return tweetid, err
 }
 
 const getUserId = `-- name: GetUserId :one
@@ -275,6 +292,26 @@ func (q *Queries) GetUsersTweets(ctx context.Context, userid string) ([]Tweet, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const isRetweet = `-- name: IsRetweet :one
+SELECT EXISTS (
+	SELECT 1 
+	FROM tweets 
+	WHERE retweetId = ? and isDeleted = false and userId = ?
+)
+`
+
+type IsRetweetParams struct {
+	Retweetid sql.NullInt32 `json:"retweetid"`
+	Userid    string        `json:"userid"`
+}
+
+func (q *Queries) IsRetweet(ctx context.Context, arg IsRetweetParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isRetweet, arg.Retweetid, arg.Userid)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const isTweetExists = `-- name: IsTweetExists :one

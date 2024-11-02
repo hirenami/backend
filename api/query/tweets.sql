@@ -53,7 +53,7 @@ WHERE tweetId = ?;
 
 -- name: GetRetweetsCount :one
 SELECT retweets FROM tweets
-WHERE tweetId = ?;
+WHERE tweetId = ? and isDeleted=false;
 
 -- name: IsTweetExists :one
 SELECT EXISTS (
@@ -72,4 +72,15 @@ WHERE tweetId = ?;
 
 -- name: GetTweet :one
 SELECT * FROM tweets
-WHERE tweetId = ?;
+WHERE tweetId = ?;                
+
+-- name: IsRetweet :one
+SELECT EXISTS (
+	SELECT 1 
+	FROM tweets 
+	WHERE retweetId = ? and isDeleted = false and userId = ?
+);
+
+-- name: GetTweetId :one
+SELECT tweetId FROM tweets
+WHERE retweetId = ? and userId = ? and isDeleted = false;

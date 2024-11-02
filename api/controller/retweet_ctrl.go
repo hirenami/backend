@@ -78,3 +78,70 @@ func (c *Controller) CreateQuoteCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+// GET /retweet/{tweetId}
+
+func (c *Controller) IsRetweetCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tweetId := mux.Vars(r)["tweetId"]
+	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
+	if err != nil {
+		// 変換エラーの処理
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+	bool,err := c.Usecase.IsRetweetUsecase(ctx, userId, int32(TweetId))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(strconv.FormatBool(bool)))
+}
+
+// DELETE /retweet/{tweetId}
+
+func (c *Controller) DeleteRetweetCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tweetId := mux.Vars(r)["tweetId"]
+	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
+	if err != nil {
+		// 変換エラーの処理
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+	err = c.Usecase.DeleteRetweetUsecase(ctx, userId, int32(TweetId))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
