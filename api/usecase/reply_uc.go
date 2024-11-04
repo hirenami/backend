@@ -8,7 +8,7 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) CreateReply(ctx context.Context, userId, content, media_url string, tweetId int32) error {
+func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media_url string, tweetId int32) error {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -92,7 +92,7 @@ func (u *Usecase) CreateReply(ctx context.Context, userId, content, media_url st
 	return nil
 }
 
-func (u *Usecase) DeleteReply(ctx context.Context, userId string, replyId int32) error {
+func (u *Usecase) DeleteReplyUsecase(ctx context.Context, userId string, replyId int32) error {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
