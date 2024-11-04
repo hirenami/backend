@@ -96,7 +96,7 @@ func (c *Controller) UpdateTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	log.Default().Println("User Userid: ", userId)
 }
 
-// PATCH /tweet/{tweetId}
+// DELETE /tweet/{tweetId}
 func (c *Controller) DeleteTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		setCORSHeaders(w)

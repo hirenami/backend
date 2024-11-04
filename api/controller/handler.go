@@ -13,7 +13,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/tweet", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateTweetTweetCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/tweet/{tweetId}/tweetid", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetTweetCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/tweet/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdateTweetCtrl))).Methods("PUT","OPTIONS")
-	r.Handle("/tweet/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteTweetCtrl))).Methods("PATCH","OPTIONS")
+	r.Handle("/tweet/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteTweetCtrl))).Methods("DELETE","OPTIONS")
 	r.Handle("/tweet/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetUsersTweetCtrl))).Methods("GET","OPTIONS")
 
 	r.Handle("/retweet/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.IsRetweetCtrl))).Methods("GET","OPTIONS")
