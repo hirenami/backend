@@ -38,11 +38,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateLikeCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteLikeCtrl))).Methods("DELETE","OPTIONS")
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.IsLikedCtrl))).Methods("GET","OPTIONS")
-
-
-
-	r.Handle("/test", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.Test)))
-	r.Handle("/test2/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.Test2)))
+	
 	r.HandleFunc("/login", controller.Login)
 	return r
 }

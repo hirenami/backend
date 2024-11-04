@@ -223,11 +223,11 @@ func (u *Usecase) EditTweetUsecase(ctx context.Context, userId string, tweetId i
 }
 
 // GetUsersTweet メソッドの実装
-func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sqlc.Tweet, error) {
+func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sqlc.Tweet,[]sqlc.User, []bool ,[]bool, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, err
+		return nil,nil,nil,nil,err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
@@ -235,32 +235,60 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sq
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return nil, err
+		return nil, nil,nil,nil,err
 	} else if !bool {
-		return nil, errors.New("user does not exist")
+		return nil,nil,nil,nil, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
 	tweets, err := u.dao.GetUsersTweet(ctx, tx, userId)
 	if err != nil {
-		return nil, err
+		return nil, nil,nil,nil,err
+	}
+
+	users := make([]sqlc.User, len(tweets))
+	liked := make([]bool, len(tweets))
+	retweeted := make([]bool, len(tweets))
+
+	for i, tweet := range tweets {
+		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		users[i] = user
+	}
+
+	for i, tweet := range tweets {
+		bool, err := u.dao.IsLiked(ctx, tx, userId, tweet.Tweetid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		liked[i] = bool
+	}
+
+	for i, tweet := range tweets {
+		bool, err := u.dao.IsRetweet(ctx, tx, userId, tweet.Tweetid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		retweeted[i] = bool
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return nil, err
+		return nil, nil,nil,nil,err
 	}
 
-	return tweets, nil
+	return tweets, users, liked, retweeted, nil
 }
 
 // GetTweet メソッドの実装
-func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Tweet, error) {
+func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Tweet,sqlc.User,bool,bool, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return sqlc.Tweet{}, err
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}
 
 	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
@@ -268,22 +296,37 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Twee
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return sqlc.Tweet{}, err
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	} else if !bool {
-		return sqlc.Tweet{}, errors.New("tweet does not exist")
+		return sqlc.Tweet{}, sqlc.User{}, false, false, errors.New("tweet does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
 	tweet, err := u.dao.GetTweet(ctx, tx, tweetId)
 	if err != nil {
-		return sqlc.Tweet{}, err
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
+	}
+
+	user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+	if err != nil {
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
+	}
+
+	liked, err := u.dao.IsLiked(ctx, tx, user.Userid, tweet.Tweetid)
+	if err != nil {
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
+	}
+
+	retweeted, err := u.dao.IsRetweet(ctx, tx, user.Userid, tweet.Tweetid)
+	if err != nil {
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return sqlc.Tweet{}, err
+		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}
 
-	return tweet, nil
+	return tweet, user, liked, retweeted, nil
 }

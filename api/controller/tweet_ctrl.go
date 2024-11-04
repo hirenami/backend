@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"api/sqlc"
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"github.com/gorilla/mux"
 	"strconv"
 )
 
@@ -162,22 +163,35 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if bool,err :=c.Usecase.IsBlockedckUsecase(ctx, userId,Id)  ; err != nil {
+	if bool, err := c.Usecase.IsBlockedckUsecase(ctx, userId, Id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}else if bool {
+	} else if bool {
 		http.Error(w, "This user is blocked", http.StatusUnauthorized)
 		return
 	}
-	
-	tweet, err := c.Usecase.GetUsersTweetUsecase(ctx, userId)
+
+	tweet, user, islike, isretweet, err := c.Usecase.GetUsersTweetUsecase(ctx, userId)
 	if err != nil {
 		log.Printf("userId=%s", userId)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	response := struct {
+		Tweet     []sqlc.Tweet
+		User      []sqlc.User
+		IsLike    []bool
+		IsRetweet []bool
+	}{
+		Tweet:     tweet,
+		User:      user,
+		IsLike:    islike,
+		IsRetweet: isretweet,
+	}
+
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(tweet)
+	jsonData, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -207,13 +221,24 @@ func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := context.Background()
-	tweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId))
+	tweet, user, islike, isretweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(tweet)
+	jsonData, err := json.Marshal(struct {
+		Tweet     sqlc.Tweet
+		User      sqlc.User
+		IsLike    bool
+		IsRetweet bool
+	}{
+		Tweet:     tweet,
+		User:      user,
+		IsLike:    islike,
+		IsRetweet: isretweet,
+	})
+	
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
