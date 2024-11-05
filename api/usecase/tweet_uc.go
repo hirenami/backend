@@ -223,7 +223,7 @@ func (u *Usecase) EditTweetUsecase(ctx context.Context, userId string, tweetId i
 }
 
 // GetUsersTweet メソッドの実装
-func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sqlc.Tweet,[]sqlc.User, []bool ,[]bool, error) {
+func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string,id string) ([]sqlc.Tweet,[]sqlc.User, []bool ,[]bool, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -259,7 +259,7 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sq
 	}
 
 	for i, tweet := range tweets {
-		bool, err := u.dao.IsLiked(ctx, tx, userId, tweet.Tweetid)
+		bool, err := u.dao.IsLiked(ctx, tx, id, tweet.Tweetid)
 		if err != nil {
 			return nil, nil,nil,nil,err
 		}
@@ -267,7 +267,7 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sq
 	}
 
 	for i, tweet := range tweets {
-		bool, err := u.dao.IsRetweet(ctx, tx, userId, tweet.Tweetid)
+		bool, err := u.dao.IsRetweet(ctx, tx, id, tweet.Tweetid)
 		if err != nil {
 			return nil, nil,nil,nil,err
 		}
@@ -284,7 +284,7 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string) ([]sq
 }
 
 // GetTweet メソッドの実装
-func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Tweet,sqlc.User,bool,bool, error) {
+func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, id string) (sqlc.Tweet,sqlc.User,bool,bool, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -312,12 +312,12 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32) (sqlc.Twee
 		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}
 
-	liked, err := u.dao.IsLiked(ctx, tx, user.Userid, tweet.Tweetid)
+	liked, err := u.dao.IsLiked(ctx, tx, id, tweet.Tweetid)
 	if err != nil {
 		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}
 
-	retweeted, err := u.dao.IsRetweet(ctx, tx, user.Userid, tweet.Tweetid)
+	retweeted, err := u.dao.IsRetweet(ctx, tx, id, tweet.Tweetid)
 	if err != nil {
 		return sqlc.Tweet{}, sqlc.User{}, false, false, err
 	}

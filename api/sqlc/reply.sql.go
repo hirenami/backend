@@ -52,16 +52,32 @@ func (q *Queries) GetLastInsertID(ctx context.Context) (int64, error) {
 	return tweetid, err
 }
 
-const getRepliesToTweet = `-- name: GetRepliesToTweet :one
+const getRepliesToTweet = `-- name: GetRepliesToTweet :many
 SELECT replyId FROM relations
-WHERE tweetId = ?
+WHERE tweetId = ? ORDER BY created_at DESC
 `
 
-func (q *Queries) GetRepliesToTweet(ctx context.Context, tweetid int32) (int32, error) {
-	row := q.db.QueryRowContext(ctx, getRepliesToTweet, tweetid)
-	var replyid int32
-	err := row.Scan(&replyid)
-	return replyid, err
+func (q *Queries) GetRepliesToTweet(ctx context.Context, tweetid int32) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, getRepliesToTweet, tweetid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int32{}
+	for rows.Next() {
+		var replyid int32
+		if err := rows.Scan(&replyid); err != nil {
+			return nil, err
+		}
+		items = append(items, replyid)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTweetRepliedTo = `-- name: GetTweetRepliedTo :one

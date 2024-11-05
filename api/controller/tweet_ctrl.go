@@ -171,7 +171,7 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tweet, user, islike, isretweet, err := c.Usecase.GetUsersTweetUsecase(ctx, userId)
+	tweet, user, islike, isretweet, err := c.Usecase.GetUsersTweetUsecase(ctx, userId,Id)
 	if err != nil {
 		log.Printf("userId=%s", userId)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -220,8 +220,18 @@ func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
 	ctx := context.Background()
-	tweet, user, islike, isretweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId))
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tweet, user, islike, isretweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId),Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -238,7 +248,7 @@ func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		IsLike:    islike,
 		IsRetweet: isretweet,
 	})
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

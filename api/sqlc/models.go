@@ -146,8 +146,9 @@ type Notification struct {
 }
 
 type Relation struct {
-	Tweetid int32 `json:"tweetid"`
-	Replyid int32 `json:"replyid"`
+	Tweetid   int32     `json:"tweetid"`
+	Replyid   int32     `json:"replyid"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type Tweet struct {

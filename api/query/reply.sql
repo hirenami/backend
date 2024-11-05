@@ -23,9 +23,9 @@ INSERT INTO relations (
 DELETE FROM relations
 WHERE tweetId = ? AND replyId = ?;
 
--- name: GetRepliesToTweet :one
+-- name: GetRepliesToTweet :many
 SELECT replyId FROM relations
-WHERE tweetId = ?;
+WHERE tweetId = ? ORDER BY created_at DESC;
 
 -- name: GetTweetRepliedTo :one
 SELECT tweetId FROM relations

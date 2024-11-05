@@ -31,7 +31,7 @@ func (d *Dao) CreateReply(ctx context.Context, tx *sql.Tx, userId, content, medi
 	return txQueries.CreateReply(ctx, args)
 }
 
-func (d *Dao) GetRepliesToTweet(ctx context.Context, tx *sql.Tx, tweetID int32) (int32, error) {
+func (d *Dao) GetRepliesToTweet(ctx context.Context, tx *sql.Tx, tweetID int32) ([]int32, error) {
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
