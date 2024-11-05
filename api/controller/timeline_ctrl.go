@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"api/sqlc"
 )
 
 // GET /timeline
@@ -28,11 +29,27 @@ func (c *Controller) GetTimelineCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tweets, err := c.Usecase.GetTimelineUsecase(ctx, userId)
+	tweet, user, islike, isretweet, err  := c.Usecase.GetTimelineUsecase(ctx, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+	jsonData, err := json.Marshal(struct {
+		Tweet     []sqlc.Tweet
+		User      []sqlc.User
+		IsLike    []bool
+		IsRetweet []bool
+	}{
+		Tweet:     tweet,
+		User:      user,
+		IsLike:    islike,
+		IsRetweet: isretweet,
+	})
 
-	json.NewEncoder(w).Encode(tweets)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
 }
