@@ -41,6 +41,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.IsLikedCtrl))).Methods("GET","OPTIONS")
 
 	r.Handle("/notifications", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetNotificationsCtrl))).Methods("GET","OPTIONS")
+	r.Handle("/notifications/{notificationId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdateNotificationStatusCtrl))).Methods("PUT","OPTIONS")
 
 	r.HandleFunc("/login", controller.Login)
 	return r

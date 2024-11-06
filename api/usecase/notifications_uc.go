@@ -65,7 +65,7 @@ func (u *Usecase) GetNotificationsUsecase(ctx context.Context, userId string) ([
 		}
 		
 	}
-	log.Printf("tweet: %v", tweet)
+
 
 
 	// トランザクションをコミット
