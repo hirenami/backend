@@ -8,23 +8,23 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) GetNotificationsUsecase(ctx context.Context, userId string) ([]sqlc.Notification, error) {
+func (u *Usecase) GetNotificationsUsecase(ctx context.Context, userId string) ([]sqlc.Notification,[]sqlc.User,[]sqlc.Tweet, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return nil, err
+		return nil, nil, nil, err
 	} else if !bool {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return nil, errors.New("user does not exist")
+		return nil, nil, nil, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
@@ -34,15 +34,46 @@ func (u *Usecase) GetNotificationsUsecase(ctx context.Context, userId string) ([
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return nil, err
+		return nil, nil, nil, err
 	}
+
+	// 通知のユーザー情報を取得
+	user := make([]sqlc.User, len(notifications))
+	tweet := make([]sqlc.Tweet, len(notifications))
+
+	for i, notification := range notifications {
+		_user, err := u.dao.GetProfile(ctx, tx, notification.Senderid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, nil, nil, err
+		}
+		user[i] = _user
+		if(notification.Contentid.Valid){
+			_tweet, err := u.dao.GetTweet(ctx, tx, notification.Contentid.Int32)
+			if err != nil {
+				if rbErr := tx.Rollback(); rbErr != nil {
+					log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+				}
+				return nil, nil, nil, err
+			}
+			tweet[i] = _tweet
+			
+		}else{
+		 	tweet[i] = sqlc.Tweet{}
+		}
+		
+	}
+	log.Printf("tweet: %v", tweet)
+
 
 	// トランザクションをコミット
 	if err := tx.Commit(); err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	return notifications, nil
+	return notifications, user, tweet, nil
 }
 
 // Usecase メソッドの実装
