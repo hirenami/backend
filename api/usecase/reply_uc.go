@@ -279,4 +279,83 @@ func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, Id string)
 	return replies, users, liked, retweeted, nil
 }
 
+func (u *Usecase) GetTweetRepliedToUsecase(ctx context.Context, Id string,replyId int32) ([]sqlc.Tweet,[]sqlc.User,[]bool,[]bool, error) {
+	// トランザクションを開始
+	tx, err := u.dao.Begin()
+	if err != nil {
+		return nil, nil,nil,nil,err
+	}
+
+	//バリデーション
+	if bool, err := u.dao.IsTweetExists(ctx, tx, replyId); err != nil {
+		return nil, nil,nil,nil,err
+	} else if !bool {
+		return nil,nil,nil,nil, errors.New("reply does not exist")
+	}
+
+	//Daoのメソッドを呼び出し
+	tweets := make([]sqlc.Tweet, 0)
+
+	for {
+		bool,err := u.dao.IsReplyExists(ctx, tx, replyId)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		if !bool {
+			break
+		}
+
+		tweetId, err := u.dao.GetTweetRepliedTo(ctx, tx, replyId)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		
+		_tweet, err := u.dao.GetTweet(ctx, tx, tweetId)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		tweets = append(tweets, _tweet)
+
+		replyId = tweetId
+	}
+
+	users := make([]sqlc.User, len(tweets))
+	liked := make([]bool, len(tweets))
+	retweeted := make([]bool, len(tweets))
+
+	for i, tweet := range tweets {
+		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		users[i] = user
+	}
+
+	for i, tweet := range tweets {
+		bool, err := u.dao.IsLiked(ctx, tx, Id, tweet.Tweetid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		liked[i] = bool
+	}
+
+	for i, tweet := range tweets {
+		bool, err := u.dao.IsRetweet(ctx, tx, Id, tweet.Tweetid)
+		if err != nil {
+			return nil, nil,nil,nil,err
+		}
+		retweeted[i] = bool
+	}
+
+
+
+	// トランザクションをコミット
+	err = tx.Commit()
+	if err != nil {
+		return nil, nil,nil,nil,err
+	}
+
+	return tweets, users, liked, retweeted, nil
+}
+
 

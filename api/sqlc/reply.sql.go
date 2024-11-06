@@ -135,6 +135,21 @@ func (q *Queries) GetUsersReplies(ctx context.Context, userid string) ([]Tweet, 
 	return items, nil
 }
 
+const isReplyExists = `-- name: IsReplyExists :one
+SELECT EXISTS (
+	SELECT 1 
+	FROM relations
+	WHERE replyId = ?
+)
+`
+
+func (q *Queries) IsReplyExists(ctx context.Context, replyid int32) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isReplyExists, replyid)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const minusOneReply = `-- name: MinusOneReply :exec
 UPDATE tweets SET replies = replies - 1
 WHERE tweetId = ?

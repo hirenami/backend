@@ -42,3 +42,10 @@ WHERE tweetId = ?;
 -- name: CountReplies :one
 SELECT replies FROM tweets
 WHERE tweetId = ?;
+
+-- name: IsReplyExists :one
+SELECT EXISTS (
+	SELECT 1 
+	FROM relations
+	WHERE replyId = ?
+);

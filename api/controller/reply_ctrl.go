@@ -107,3 +107,60 @@ func (c *Controller) GetReplyCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(jsonData)
 }
+
+// GET /reply/{tweetId}/replied
+
+func (c *Controller) GetTweetRepliedToCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	tweetId := mux.Vars(r)["tweetId"]
+	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
+	if err != nil {
+		// 変換エラーの処理
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+	reply,user, islike, isretweet, err := c.Usecase.GetTweetRepliedToUsecase(ctx,Id,int32(TweetId))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Tweet     []sqlc.Tweet
+		User      []sqlc.User
+		IsLike    []bool
+		IsRetweet []bool
+	}{
+		Tweet:     reply,
+		User:      user,
+		IsLike:    islike,
+		IsRetweet: isretweet,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	jsonData, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
+}

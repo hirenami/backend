@@ -101,3 +101,10 @@ func (d *Dao) CountReplies(ctx context.Context, tx *sql.Tx, replyID int32) (int3
 
 	return txQueries.CountReplies(ctx, replyID)
 }
+
+func (d *Dao) IsReplyExists(ctx context.Context, tx *sql.Tx, replyID int32) (bool, error) {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	return txQueries.IsReplyExists(ctx, replyID)
+}
