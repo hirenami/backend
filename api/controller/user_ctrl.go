@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"github.com/gorilla/mux"
+	"api/sqlc"
 )
 
 // GET /user/{userId}
@@ -38,21 +39,25 @@ func (c *Controller) GetProfileCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := c.Usecase.GetProfileUsecase(ctx, userId)
+	user,following,follower,Isfollow, err := c.Usecase.GetProfileUsecase(ctx,Id, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response := struct {
+		User sqlc.User `json:"user"`
+		Following int32 `json:"following"`
+		Follower int32 `json:"follower"`
+		Isfollow bool `json:"isfollow"`
+	}{
+		User: user,
+		Following: following,
+		Follower: follower,
+		Isfollow: Isfollow,
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 
-	// following, follwer, err := c.Usecase.GetFollowCountUsecase(ctx, userId)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	json.NewEncoder(w).Encode(profile)
-	//json.NewEncoder(w).Encode(following)
-	//json.NewEncoder(w).Encode(follwer)
 }
 
 func (c *Controller) GetMyProfileCtrl(w http.ResponseWriter, r *http.Request) {
@@ -70,26 +75,21 @@ func (c *Controller) GetMyProfileCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := context.Background()
-	userId, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 
-	profile, err := c.Usecase.GetProfileUsecase(ctx, userId)
+	user,_,_,_, err := c.Usecase.GetProfileUsecase(ctx,Id,Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// following, follwer, err := c.Usecase.GetFollowCountUsecase(ctx, userId)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
 
-	json.NewEncoder(w).Encode(profile)
-	//json.NewEncoder(w).Encode(following)
-	//json.NewEncoder(w).Encode(follwer)
+	
 }
