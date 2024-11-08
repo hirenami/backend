@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"api/sqlc"
 	"context"
 	"errors"
 	"log"
@@ -111,11 +112,11 @@ func (u *Usecase) DelateFollowUsecase(ctx context.Context, userId string, follow
 	return nil
 }
 
-func (u *Usecase) GetFollowingUsecase(ctx context.Context, userId string) ([]string, error) {
+func (u *Usecase) GetFollowingUsecase(ctx context.Context, userId string) ([]sqlc.User, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
@@ -123,31 +124,40 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, userId string) ([]str
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return []string{}, err
+		return []sqlc.User{}, err
 	} else if !bool {
-		return []string{}, errors.New("user does not exist")
+		return []sqlc.User{},errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
 	follows, err := u.dao.GetFollowing(ctx, tx, userId)
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
 	}
 
+	following := []sqlc.User{}
+
+	for _, followId := range follows {
+		follow, err := u.dao.GetProfile(ctx, tx, followId)
+		if err != nil {
+			return []sqlc.User{}, err
+		}
+		following = append(following, follow)
+	}
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
 	}
 
-	return follows, nil
+	return following, nil
 }
 
-func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId string) ([]string, error) {
+func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId string) ([]sqlc.User, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
@@ -155,21 +165,31 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId string) ([]stri
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return []string{}, err
+		return []sqlc.User{}, err
 	} else if !bool {
-		return []string{}, errors.New("user does not exist")
+		return []sqlc.User{}, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
-	followers, err := u.dao.GetFollower(ctx, tx, userId)
+	followersId, err := u.dao.GetFollower(ctx, tx, userId)
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
+	}
+
+	followers := []sqlc.User{}
+
+	for _, followerId := range followersId {
+		follower, err := u.dao.GetProfile(ctx, tx, followerId)
+		if err != nil {
+			return []sqlc.User{}, err
+		}
+		followers = append(followers, follower)
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return []string{}, err
+		return []sqlc.User{}, err
 	}
 
 	return followers, nil
