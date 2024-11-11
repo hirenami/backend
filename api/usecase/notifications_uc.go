@@ -2,78 +2,76 @@ package usecase
 
 import (
 	"api/sqlc"
+	"api/model"
 	"context"
 	"errors"
 	"log"
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) GetNotificationsUsecase(ctx context.Context, userId string) ([]sqlc.Notification,[]sqlc.User,[]sqlc.Tweet, error) {
+func (u *Usecase) GetNotificationsUsecase(ctx context.Context, myId string) ([]model.NotificationParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-
-	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return nil, nil, nil, err
-	} else if !bool {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return nil, nil, nil, errors.New("user does not exist")
-	}
-
-	// daoのメソッドにトランザクションを渡して実行
-	notifications, err := u.dao.GetNotifications(ctx, tx, userId)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return nil, nil, nil, err
-	}
-
-	// 通知のユーザー情報を取得
-	user := make([]sqlc.User, len(notifications))
-	tweet := make([]sqlc.Tweet, len(notifications))
-
-	for i, notification := range notifications {
-		_user, err := u.dao.GetProfile(ctx, tx, notification.Senderid)
+	defer func() {
+		// エラーハンドリングのためにトランザクションをロールバックする
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 			}
-			return nil, nil, nil, err
 		}
-		user[i] = _user
-		if(notification.Contentid.Valid){
-			_tweet, err := u.dao.GetTweet(ctx, tx, notification.Contentid.Int32)
-			if err != nil {
-				if rbErr := tx.Rollback(); rbErr != nil {
-					log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-				}
-				return nil, nil, nil, err
-			}
-			tweet[i] = _tweet
-			
-		}else{
-		 	tweet[i] = sqlc.Tweet{}
-		}
-		
+	}()
+
+	// ユーザー存在確認
+	exists, err := u.dao.IsUserExists(ctx, tx, myId)
+	if err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, errors.New("user does not exist")
 	}
 
+	// 通知の取得
+	notifications, err := u.dao.GetNotifications(ctx, tx, myId)
+	if err != nil {
+		return nil, err
+	}
 
+	// 通知のユーザー情報とツイート情報を取得
+	notificationParams := make([]model.NotificationParams, len(notifications))
+	for i, notification := range notifications {
+		// ユーザー情報の取得
+		_user, err := u.dao.GetProfile(ctx, tx, notification.Senderid)
+		if err != nil {
+			return nil, err
+		}
+
+		// ツイート情報の取得（ContentidがValidな場合のみ）
+		var _tweet sqlc.Tweet
+		if notification.Contentid!=0 {
+			_tweet, err = u.dao.GetTweet(ctx, tx, notification.Contentid)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// NotificationParamsに詰め込む
+		notificationParams[i] = model.NotificationParams{
+			Notification: notification,
+			User:         _user,
+			Tweet:        _tweet,
+		}
+	}
 
 	// トランザクションをコミット
-	if err := tx.Commit(); err != nil {
-		return nil, nil, nil, err
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
 	}
 
-	return notifications, user, tweet, nil
+	// 最終結果を返す
+	return notificationParams, nil
 }
 
 // Usecase メソッドの実装

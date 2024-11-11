@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createDm = `-- name: CreateDm :exec
@@ -19,10 +18,10 @@ INSERT INTO dms (
 `
 
 type CreateDmParams struct {
-	Senderid   string         `json:"senderid"`
-	Receiverid string         `json:"receiverid"`
-	Content    string         `json:"content"`
-	MediaUrl   sql.NullString `json:"media_url"`
+	Senderid   string `json:"senderid"`
+	Receiverid string `json:"receiverid"`
+	Content    string `json:"content"`
+	MediaUrl   string `json:"media_url"`
 }
 
 func (q *Queries) CreateDm(ctx context.Context, arg CreateDmParams) error {

@@ -10,22 +10,9 @@ func (d *Dao) CreateBiography(ctx context.Context, tx *sql.Tx, userId string, bi
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var Biography sql.NullString
-	if biography != "" {
-		Biography = sql.NullString{
-			String: biography,
-			Valid: true,
-		}
-	} else {
-		Biography = sql.NullString{
-			String: "",
-			Valid: false,
-		}
-	}
-
 	arg := sqlc.CreateBiographyParams{
 		Userid: userId,
-		Biography: Biography,
+		Biography: biography,
 	}
 	return txQueries.CreateBiography(ctx, arg)
 }

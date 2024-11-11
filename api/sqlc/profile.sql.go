@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createBiography = `-- name: CreateBiography :exec
@@ -17,8 +16,8 @@ WHERE userId = ?
 `
 
 type CreateBiographyParams struct {
-	Biography sql.NullString `json:"biography"`
-	Userid    string         `json:"userid"`
+	Biography string `json:"biography"`
+	Userid    string `json:"userid"`
 }
 
 func (q *Queries) CreateBiography(ctx context.Context, arg CreateBiographyParams) error {

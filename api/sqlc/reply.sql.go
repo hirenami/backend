@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const countReplies = `-- name: CountReplies :one
@@ -31,9 +30,9 @@ INSERT INTO tweets (
 `
 
 type CreateReplyParams struct {
-	Userid   string         `json:"userid"`
-	Content  string         `json:"content"`
-	MediaUrl sql.NullString `json:"media_url"`
+	Userid   string `json:"userid"`
+	Content  string `json:"content"`
+	MediaUrl string `json:"media_url"`
 }
 
 func (q *Queries) CreateReply(ctx context.Context, arg CreateReplyParams) error {

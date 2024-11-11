@@ -10,24 +10,11 @@ func (d *Dao) CreateNotification(ctx context.Context,tx *sql.Tx, senderId, reply
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var contentid sql.NullInt32
-	if contentId == 0 {
-		contentid = sql.NullInt32{
-			Int32: 0,
-			Valid: false,
-		}
-	} else {
-		contentid = sql.NullInt32{
-			Int32: contentId,
-			Valid: true,
-		}
-	}
-
 	args := sqlc.CreateNotificationParams{
 		Senderid: senderId,
 		Replyid:  replyId,
 		Type:     Type,
-		Contentid: contentid,
+		Contentid: contentId,
 	}
 
 	return txQueries.CreateNotification(ctx, args)

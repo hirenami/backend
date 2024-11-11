@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"api/model"
 	"api/sqlc"
 	"context"
 	"errors"
@@ -156,206 +157,242 @@ func (u *Usecase) DeleteReplyUsecase(ctx context.Context, userId string, replyId
 	return nil
 }
 
-func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, Id string) ([]sqlc.Tweet, []sqlc.User,[]bool,[]bool,error) {
+func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, myId string) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, nil,nil,nil,err
+		return nil, err
+	}
+	defer func() {
+		// エラーが発生した場合はロールバック
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+		}
+	}()
+
+	// ユーザーが存在するかをバリデーション
+	if exists, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, errors.New("user does not exist")
 	}
 
-	//バリデーション
-	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
-		return nil, nil,nil,nil,err
-	} else if !bool {
-		return nil, nil,nil,nil,errors.New("user does not exist")
-	}
-
-	//Daoのメソッドを呼び出し
+	// ユーザーのリプライツイートを取得
 	tweets, err := u.dao.GetUsersReplies(ctx, tx, userId)
 	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return nil, nil,nil,nil,err
+		return nil, err
 	}
 
-	users := make([]sqlc.User, len(tweets))
-	liked := make([]bool, len(tweets))
-	retweeted := make([]bool, len(tweets))
+	// TweetParamsのスライスを作成
+	var tweetParamsList []model.TweetParams
 
-	for i, tweet := range tweets {
+	for _, tweet := range tweets {
+		// ツイート投稿者のユーザー情報を取得
 		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
-		users[i] = user
-	}
 
-	for i, tweet := range tweets {
-		bool, err := u.dao.IsLiked(ctx, tx, Id, tweet.Tweetid)
+		// いいねとリツイート情報を取得
+		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
-		liked[i] = bool
-	}
 
-	for i, tweet := range tweets {
-		bool, err := u.dao.IsRetweet(ctx, tx, Id, tweet.Tweetid)
+		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
-		retweeted[i] = bool
+
+		// TweetParamsに情報を詰めてリストに追加
+		tweetParamsList = append(tweetParamsList, model.TweetParams{
+			Tweet:    tweet,
+			User:     user,
+			Likes:    liked,
+			Retweets: retweeted,
+		})
 	}
 
 	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return nil, nil,nil,nil,err
+	if err := tx.Commit(); err != nil {
+		return nil, err
 	}
 
-	return tweets, users,liked,retweeted,nil
+	return tweetParamsList, nil
 }
 
-func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, Id string) ([]sqlc.Tweet, []sqlc.User, []bool, []bool, error) {
+func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, myId string) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, err
+	}
+	defer func() {
+		// エラーが発生した場合はロールバック
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+		}
+	}()
+
+	// ツイートが存在するかバリデーション
+	if exists, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, errors.New("reply does not exist")
 	}
 
-	//バリデーション
-	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
-		return nil, nil, nil, nil, err
-	} else if !bool {
-		return nil, nil, nil, nil, errors.New("reply does not exist")
-	}
-
-	//Daoのメソッドを呼び出し
+	// ツイートへのリプライを取得
 	tweets, err := u.dao.GetRepliesToTweet(ctx, tx, tweetId)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	replies:= make([]sqlc.Tweet, len(tweets))
-	users := make([]sqlc.User, len(tweets))
-	liked := make([]bool, len(tweets))
-	retweeted := make([]bool, len(tweets))
+	// TweetParamsのスライスを作成
+	var tweetParamsList []model.TweetParams
 
-	
-	for i, tweet := range tweets {
+	for _, tweet := range tweets {
+		// リプライツイートを取得
 		reply, err := u.dao.GetTweet(ctx, tx, tweet)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return nil, err
 		}
-		replies[i] = reply
 
+		// ツイート投稿者のユーザー情報を取得
 		user, err := u.dao.GetProfile(ctx, tx, reply.Userid)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return nil, err
 		}
-		users[i] = user
 
-		bool, err := u.dao.IsLiked(ctx, tx, Id, tweet)
+		// いいねとリツイート情報を取得
+		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return nil, err
 		}
-		liked[i] = bool
 
-		bool, err = u.dao.IsRetweet(ctx, tx, Id, tweet)
+		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return nil, err
 		}
-		retweeted[i] = bool
 
+		// TweetParamsに情報を詰めてリストに追加
+		tweetParamsList = append(tweetParamsList, model.TweetParams{
+			Tweet:    reply,
+			User:     user,
+			Likes:    liked,
+			Retweets: retweeted,
+		})
 	}
 
 	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if err := tx.Commit(); err != nil {
+		return nil, err
 	}
 
-	return replies, users, liked, retweeted, nil
+	return tweetParamsList, nil
 }
 
-func (u *Usecase) GetTweetRepliedToUsecase(ctx context.Context, Id string,replyId int32) ([]sqlc.Tweet,[]sqlc.User,[]bool,[]bool, error) {
+func (u *Usecase) GetTweetRepliedToUsecase(ctx context.Context, Id string, replyId int32) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil, nil,nil,nil,err
+		return nil, err
 	}
-
-	//バリデーション
-	if bool, err := u.dao.IsTweetExists(ctx, tx, replyId); err != nil {
-		return nil, nil,nil,nil,err
-	} else if !bool {
-		return nil,nil,nil,nil, errors.New("reply does not exist")
-	}
-
-	//Daoのメソッドを呼び出し
-	tweets := make([]sqlc.Tweet, 0)
-
-	for {
-		bool,err := u.dao.IsReplyExists(ctx, tx, replyId)
+	defer func() {
+		// エラーが発生した場合はロールバック
 		if err != nil {
-			return nil, nil,nil,nil,err
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
 		}
-		if !bool {
+	}()
+
+	// バリデーション: リプライの存在確認
+	if exists, err := u.dao.IsTweetExists(ctx, tx, replyId); err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, errors.New("reply does not exist")
+	}
+
+	// ツイートのリストを初期化
+	var tweets []sqlc.Tweet
+
+	// リプライツイートを辿る
+	for {
+		// リプライが存在するか確認
+		exists, err := u.dao.IsReplyExists(ctx, tx, replyId)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
 			break
 		}
 
+		// リプライ元ツイートのIDを取得
 		tweetId, err := u.dao.GetTweetRepliedTo(ctx, tx, replyId)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
 		
+		// ツイートを取得
 		_tweet, err := u.dao.GetTweet(ctx, tx, tweetId)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
 		tweets = append(tweets, _tweet)
 
+		// 次のリプライ元IDに更新
 		replyId = tweetId
 	}
 
+	// TweetParamsにまとめるためのリストを準備
+	var tweetParamsList []model.TweetParams
 	users := make([]sqlc.User, len(tweets))
 	liked := make([]bool, len(tweets))
 	retweeted := make([]bool, len(tweets))
 
+	// ツイートごとにユーザー、いいね、リツイート情報を取得
 	for i, tweet := range tweets {
+		// ツイートの投稿者情報を取得
 		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
 		users[i] = user
-	}
 
-	for i, tweet := range tweets {
-		bool, err := u.dao.IsLiked(ctx, tx, Id, tweet.Tweetid)
+		// いいね情報を取得
+		isLiked, err := u.dao.IsLiked(ctx, tx, Id, tweet.Tweetid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
-		liked[i] = bool
-	}
+		liked[i] = isLiked
 
-	for i, tweet := range tweets {
-		bool, err := u.dao.IsRetweet(ctx, tx, Id, tweet.Tweetid)
+		// リツイート情報を取得
+		isRetweeted, err := u.dao.IsRetweet(ctx, tx, Id, tweet.Tweetid)
 		if err != nil {
-			return nil, nil,nil,nil,err
+			return nil, err
 		}
-		retweeted[i] = bool
+		retweeted[i] = isRetweeted
+
+		// TweetParamsとしてまとめる
+		tweetParamsList = append(tweetParamsList, model.TweetParams{
+			Tweet:    tweet,
+			User:     user,
+			Likes:    isLiked,
+			Retweets: isRetweeted,
+		})
 	}
-
-
 
 	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return nil, nil,nil,nil,err
+	if err := tx.Commit(); err != nil {
+		return nil, err
 	}
 
-	return tweets, users, liked, retweeted, nil
+	return tweetParamsList, nil
 }
+
 
 

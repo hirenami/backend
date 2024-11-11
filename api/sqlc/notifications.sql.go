@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createNotification = `-- name: CreateNotification :exec
@@ -19,10 +18,10 @@ INSERT INTO notifications (
 `
 
 type CreateNotificationParams struct {
-	Senderid  string        `json:"senderid"`
-	Replyid   string        `json:"replyid"`
-	Type      string        `json:"type"`
-	Contentid sql.NullInt32 `json:"contentid"`
+	Senderid  string `json:"senderid"`
+	Replyid   string `json:"replyid"`
+	Type      string `json:"type"`
+	Contentid int32  `json:"contentid"`
 }
 
 func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotificationParams) error {

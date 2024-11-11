@@ -10,23 +10,10 @@ func (d *Dao) CreateReply(ctx context.Context, tx *sql.Tx, userId, content, medi
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var MediaUrl sql.NullString
-	if mediaUrl == "" {
-		MediaUrl = sql.NullString{
-			String: "",
-			Valid:  false,
-		}
-	} else {
-		MediaUrl = sql.NullString{
-			String: mediaUrl,
-			Valid:  true,
-		}
-	}
-
 	args := sqlc.CreateReplyParams{
 		Userid:       userId,
 		Content:  content,
-		MediaUrl: MediaUrl,
+		MediaUrl: mediaUrl,
 	}
 	return txQueries.CreateReply(ctx, args)
 }

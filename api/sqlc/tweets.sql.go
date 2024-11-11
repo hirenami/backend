@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createQuote = `-- name: CreateQuote :exec
@@ -19,10 +18,10 @@ INSERT INTO tweets (
 `
 
 type CreateQuoteParams struct {
-	Userid    string         `json:"userid"`
-	Retweetid sql.NullInt32  `json:"retweetid"`
-	Content   string         `json:"content"`
-	MediaUrl  sql.NullString `json:"media_url"`
+	Userid    string `json:"userid"`
+	Retweetid int32  `json:"retweetid"`
+	Content   string `json:"content"`
+	MediaUrl  string `json:"media_url"`
 }
 
 func (q *Queries) CreateQuote(ctx context.Context, arg CreateQuoteParams) error {
@@ -44,8 +43,8 @@ INSERT INTO tweets (
 `
 
 type CreateRetweetParams struct {
-	Userid    string        `json:"userid"`
-	Retweetid sql.NullInt32 `json:"retweetid"`
+	Userid    string `json:"userid"`
+	Retweetid int32  `json:"retweetid"`
 }
 
 func (q *Queries) CreateRetweet(ctx context.Context, arg CreateRetweetParams) error {
@@ -62,9 +61,9 @@ INSERT INTO tweets (
 `
 
 type CreateTweetParams struct {
-	Userid   string         `json:"userid"`
-	Content  string         `json:"content"`
-	MediaUrl sql.NullString `json:"media_url"`
+	Userid   string `json:"userid"`
+	Content  string `json:"content"`
+	MediaUrl string `json:"media_url"`
 }
 
 func (q *Queries) CreateTweet(ctx context.Context, arg CreateTweetParams) error {
@@ -90,9 +89,9 @@ WHERE tweetId = ?
 `
 
 type EditTweetParams struct {
-	Content  string         `json:"content"`
-	MediaUrl sql.NullString `json:"media_url"`
-	Tweetid  int32          `json:"tweetid"`
+	Content  string `json:"content"`
+	MediaUrl string `json:"media_url"`
+	Tweetid  int32  `json:"tweetid"`
 }
 
 func (q *Queries) EditTweet(ctx context.Context, arg EditTweetParams) error {
@@ -105,7 +104,7 @@ SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, con
 WHERE retweetId = ? and isQuote = true and isDeleted = false ORDER BY created_at DESC
 `
 
-func (q *Queries) GetQuotes(ctx context.Context, retweetid sql.NullInt32) ([]Tweet, error) {
+func (q *Queries) GetQuotes(ctx context.Context, retweetid int32) ([]Tweet, error) {
 	rows, err := q.db.QueryContext(ctx, getQuotes, retweetid)
 	if err != nil {
 		return nil, err
@@ -148,9 +147,9 @@ SELECT retweetId FROM tweets
 WHERE tweetId = ?
 `
 
-func (q *Queries) GetRetweetId(ctx context.Context, tweetid int32) (sql.NullInt32, error) {
+func (q *Queries) GetRetweetId(ctx context.Context, tweetid int32) (int32, error) {
 	row := q.db.QueryRowContext(ctx, getRetweetId, tweetid)
-	var retweetid sql.NullInt32
+	var retweetid int32
 	err := row.Scan(&retweetid)
 	return retweetid, err
 }
@@ -160,7 +159,7 @@ SELECT userId FROM tweets
 WHERE retweetId = ? and isQuote = false and isDeleted = false ORDER BY created_at DESC
 `
 
-func (q *Queries) GetRetweets(ctx context.Context, retweetid sql.NullInt32) ([]string, error) {
+func (q *Queries) GetRetweets(ctx context.Context, retweetid int32) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, getRetweets, retweetid)
 	if err != nil {
 		return nil, err
@@ -228,8 +227,8 @@ WHERE retweetId = ? and userId = ? and isDeleted = false
 `
 
 type GetTweetIdParams struct {
-	Retweetid sql.NullInt32 `json:"retweetid"`
-	Userid    string        `json:"userid"`
+	Retweetid int32  `json:"retweetid"`
+	Userid    string `json:"userid"`
 }
 
 func (q *Queries) GetTweetId(ctx context.Context, arg GetTweetIdParams) (int32, error) {
@@ -303,8 +302,8 @@ SELECT EXISTS (
 `
 
 type IsRetweetParams struct {
-	Retweetid sql.NullInt32 `json:"retweetid"`
-	Userid    string        `json:"userid"`
+	Retweetid int32  `json:"retweetid"`
+	Userid    string `json:"userid"`
 }
 
 func (q *Queries) IsRetweet(ctx context.Context, arg IsRetweetParams) (bool, error) {

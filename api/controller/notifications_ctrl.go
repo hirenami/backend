@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"context"
 	"encoding/json"
-	"api/sqlc"
 	"github.com/gorilla/mux"
 	"strconv"
 )
@@ -27,23 +26,13 @@ func (c *Controller) GetNotificationsCtrl(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	notifications,users,tweets,err := c.Usecase.GetNotificationsUsecase(ctx, userId)
+	notificationParams,err := c.Usecase.GetNotificationsUsecase(ctx, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
-	response := struct {
-		Notification []sqlc.Notification
-		User []sqlc.User 
-		Tweet []sqlc.Tweet
-	}{
-		Notification: notifications,
-		User: users,
-		Tweet: tweets,
-	}
-	
-	jsonData, err := json.Marshal(response)
+
+	jsonData, err := json.Marshal(notificationParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/gorilla/mux"
-	"api/sqlc"
 )
 
 // POST /reply/{tweetId}
@@ -81,30 +80,17 @@ func (c *Controller) GetReplyCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	reply,user, islike, isretweet, err := c.Usecase.GetReplyUsecase(ctx,int32(TweetId),Id)
+	tweetParams, err := c.Usecase.GetReplyUsecase(ctx,int32(TweetId),Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	response := struct {
-		Tweet     []sqlc.Tweet
-		User      []sqlc.User
-		IsLike    []bool
-		IsRetweet []bool
-	}{
-		Tweet:     reply,
-		User:      user,
-		IsLike:    islike,
-		IsRetweet: isretweet,
+	jsonData, err := json.Marshal(tweetParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(response)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	w.Write(jsonData)
 }
 
@@ -138,26 +124,14 @@ func (c *Controller) GetTweetRepliedToCtrl(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	reply,user, islike, isretweet, err := c.Usecase.GetTweetRepliedToUsecase(ctx,Id,int32(TweetId))
+	tweetParams, err := c.Usecase.GetTweetRepliedToUsecase(ctx,Id,int32(TweetId))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response := struct {
-		Tweet     []sqlc.Tweet
-		User      []sqlc.User
-		IsLike    []bool
-		IsRetweet []bool
-	}{
-		Tweet:     reply,
-		User:      user,
-		IsLike:    islike,
-		IsRetweet: isretweet,
-	}
-
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(response)
+	jsonData, err := json.Marshal(tweetParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

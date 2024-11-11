@@ -235,11 +235,11 @@ func (u *Usecase) EraseRetweetUsecase(ctx context.Context, userId string, tweetI
 		}
 		return err
 	}
-	if !_tweetId.Valid {
+	if _tweetId==0 {
 		return errors.New("this tweet is not retweet")
 	}
 
-	if err := u.dao.MinusRetweet(ctx, tx, _tweetId.Int32); err != nil {
+	if err := u.dao.MinusRetweet(ctx, tx, _tweetId); err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)

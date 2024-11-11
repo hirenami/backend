@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"api/sqlc"
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -171,27 +170,15 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tweet, user, islike, isretweet, err := c.Usecase.GetUsersTweetUsecase(ctx, userId,Id)
+	tweetParams, err := c.Usecase.GetUsersTweetUsecase(ctx, userId,Id)
 	if err != nil {
 		log.Printf("userId=%s", userId)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response := struct {
-		Tweet     []sqlc.Tweet
-		User      []sqlc.User
-		IsLike    []bool
-		IsRetweet []bool
-	}{
-		Tweet:     tweet,
-		User:      user,
-		IsLike:    islike,
-		IsRetweet: isretweet,
-	}
-
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(response)
+	jsonData, err := json.Marshal(tweetParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -231,23 +218,13 @@ func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tweet, user, islike, isretweet, err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId),Id)
+	tweetparam , err := c.Usecase.GetTweetUsecase(ctx, int32(TweetId),Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	jsonData, err := json.Marshal(struct {
-		Tweet     sqlc.Tweet
-		User      sqlc.User
-		IsLike    bool
-		IsRetweet bool
-	}{
-		Tweet:     tweet,
-		User:      user,
-		IsLike:    islike,
-		IsRetweet: isretweet,
-	})
+	jsonData, err := json.Marshal(tweetparam)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -10,24 +10,11 @@ func (d *Dao) CreateDm(ctx context.Context, tx *sql.Tx, senderId, receiverId, co
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var mediaUrl sql.NullString
-	if media_url == "" {
-		mediaUrl = sql.NullString{
-			String: "",
-			Valid:  false, // NULLを示す
-		}
-	} else {
-		mediaUrl = sql.NullString{
-			String: media_url,
-			Valid:  true, // 有効なURL
-		}
-	}
-
 	arg := sqlc.CreateDmParams{
 		Senderid:   senderId,
 		Receiverid: receiverId,
 		Content:    content,
-		MediaUrl:   mediaUrl,
+		MediaUrl:   media_url,
 	}
 	return txQueries.CreateDm(ctx, arg)
 }

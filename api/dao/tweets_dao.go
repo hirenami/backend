@@ -10,23 +10,10 @@ func (d *Dao) CreateTweet(ctx context.Context, tx *sql.Tx, userId, content, medi
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var mediaUrl sql.NullString
-	if media_url == "" {
-		mediaUrl = sql.NullString{
-			String: "",
-			Valid:  false,
-		}
-	} else {
-		mediaUrl = sql.NullString{
-			String: media_url,
-			Valid:  true,
-		}
-	}
-
 	args := sqlc.CreateTweetParams{
 		Userid:   userId,
 		Content:  content,
-		MediaUrl: mediaUrl,
+		MediaUrl: media_url,
 	}
 
 	return txQueries.CreateTweet(ctx, args)
@@ -38,10 +25,7 @@ func (d *Dao) CreateRetweet(ctx context.Context, tx *sql.Tx, userId string, retw
 
 	args := sqlc.CreateRetweetParams{
 		Userid: userId,
-		Retweetid: sql.NullInt32{
-			Int32: retweetId,
-			Valid: true,
-		},
+		Retweetid: retweetId,
 	}
 
 	return txQueries.CreateRetweet(ctx, args)
@@ -51,27 +35,11 @@ func (d *Dao) CreateQuote(ctx context.Context, tx *sql.Tx, userId, content, medi
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var mediaUrl sql.NullString
-	if media_url == "" {
-		mediaUrl = sql.NullString{
-			String: "",
-			Valid:  false,
-		}
-	} else {
-		mediaUrl = sql.NullString{
-			String: media_url,
-			Valid:  true,
-		}
-	}
-
 	args := sqlc.CreateQuoteParams{
 		Userid:   userId,
 		Content:  content,
-		MediaUrl: mediaUrl,
-		Retweetid: sql.NullInt32{
-			Int32: retweetId,
-			Valid: true,
-		},
+		MediaUrl: media_url,
+		Retweetid: retweetId,
 	}
 
 	return txQueries.CreateQuote(ctx, args)
@@ -88,22 +56,9 @@ func (d *Dao) EditTweet(ctx context.Context, tx *sql.Tx, content, media_url stri
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var mediaUrl sql.NullString
-	if media_url == "" {
-		mediaUrl = sql.NullString{
-			String: "",
-			Valid:  false,
-		}
-	} else {
-		mediaUrl = sql.NullString{
-			String: media_url,
-			Valid:  true,
-		}
-	}
-
 	args := sqlc.EditTweetParams{
 		Content:  content,
-		MediaUrl: mediaUrl,
+		MediaUrl: media_url,
 		Tweetid:  tweetId,
 	}
 
@@ -114,20 +69,7 @@ func (d *Dao) GetQuotes(ctx context.Context, tx *sql.Tx, retweetId int32) ([]sql
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var RetweetId sql.NullInt32
-	if retweetId == 0 {
-		RetweetId = sql.NullInt32{
-			Int32: 0,
-			Valid: false,
-		}
-	} else {
-		RetweetId = sql.NullInt32{
-			Int32: retweetId,
-			Valid: true,
-		}
-	}
-
-	return txQueries.GetQuotes(ctx, RetweetId)
+	return txQueries.GetQuotes(ctx, retweetId)
 
 }
 
@@ -135,20 +77,8 @@ func (d *Dao) GetRetweets(ctx context.Context, tx *sql.Tx, retweetId int32) ([]s
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	var RetweetId sql.NullInt32
-	if retweetId == 0 {
-		RetweetId = sql.NullInt32{
-			Int32: 0,
-			Valid: false,
-		}
-	} else {
-		RetweetId = sql.NullInt32{
-			Int32: retweetId,
-			Valid: true,
-		}
-	}
 
-	return txQueries.GetRetweets(ctx, RetweetId)
+	return txQueries.GetRetweets(ctx, retweetId)
 }
 
 func (d *Dao) GetRetweetsCount(ctx context.Context, tx *sql.Tx, tweetId int32) (int32, error) {
@@ -193,7 +123,7 @@ func (d *Dao) GetUserId(ctx context.Context, tx *sql.Tx, tweetId int32) (string,
 	return txQueries.GetUserId(ctx, tweetId)
 }
 
-func (d *Dao) GetRetweetId(ctx context.Context, tx *sql.Tx, tweetId int32) (sql.NullInt32, error) {
+func (d *Dao) GetRetweetId(ctx context.Context, tx *sql.Tx, tweetId int32) (int32, error) {
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
@@ -211,14 +141,9 @@ func (d *Dao) IsRetweet (ctx context.Context, tx *sql.Tx,userId string, retweetI
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	RetweetId := sql.NullInt32{
-		Int32: retweetId,
-		Valid: true,
-	}
-
 	arg := sqlc.IsRetweetParams{
 		Userid: userId,
-		Retweetid: RetweetId,
+		Retweetid: retweetId,
 	}
 
 	return txQueries.IsRetweet(ctx, arg)
@@ -228,14 +153,9 @@ func (d *Dao) GetTweetId(ctx context.Context, tx *sql.Tx, userId string, retweet
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	RetweetId := sql.NullInt32{
-		Int32: retweetId,
-		Valid: true,
-	}
-
 	arg := sqlc.GetTweetIdParams{
 		Userid: userId,
-		Retweetid: RetweetId,
+		Retweetid: retweetId,
 	}
 
 	return txQueries.GetTweetId(ctx, arg)

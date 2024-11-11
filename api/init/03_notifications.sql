@@ -6,7 +6,7 @@ CREATE TABLE notifications (
     type VARCHAR(255) NOT NULL,        -- 通知の種類
     createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status ENUM('unread', 'read') NOT NULL DEFAULT 'unread',  -- ステータス
-    contentId INT,               -- リツイートやツイートID
+    contentId INT DEFAULT 0 NOT NULL,               -- リツイートやツイートID
     FOREIGN KEY (senderId) REFERENCES users(userId),
     FOREIGN KEY (replyId) REFERENCES users(userId)
 );
