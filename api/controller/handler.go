@@ -23,7 +23,6 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/follow/{userId}/following", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetFollowingCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/follow/{userId}/follower", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetFollowerCtrl))).Methods("GET","OPTIONS")
-	r.Handle("/follow/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.IsFollowingCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/follow/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateFollowCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/follow/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteFollowCtrl))).Methods("DELETE","OPTIONS")
 

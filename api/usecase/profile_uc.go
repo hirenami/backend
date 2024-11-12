@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"api/sqlc"
+	"api/model"
 	"context"
 	"errors"
 	"log"
@@ -74,11 +74,11 @@ func (u *Usecase) CreateProfileUsecase(ctx context.Context, userId, username, bi
 	return nil
 }
 
-func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId string) (sqlc.User, int32, int32, bool, error) {
+func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId string) (model.Profile, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return sqlc.User{}, 0, 0, false, err
+		return model.Profile{}, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, Id); err != nil {
@@ -86,37 +86,44 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId strin
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return sqlc.User{}, 0, 0, false, err
+		return model.Profile{}, err
 	} else if !bool {
-		return sqlc.User{}, 0,0,false,errors.New("user does not exist")
+		return model.Profile{}, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
 	user, err := u.dao.GetProfile(ctx, tx, userId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return sqlc.User{}, 0, 0, false, err
+			return model.Profile{}, err
 		}
 	}
 
 	isFollowing, err := u.dao.IsFollowing(ctx, tx, userId, Id)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return sqlc.User{}, 0, 0, false, err
+			return model.Profile{}, err
+		}
+	}
+
+	isFollower, err := u.dao.IsFollowing(ctx, tx, Id, userId)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.Profile{}, err
 		}
 	}
 
 	following, err := u.dao.CountFollowing(ctx, tx, userId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return sqlc.User{}, 0, 0, false, err
+			return model.Profile{}, err
 		}
 	}
 
 	followers, err := u.dao.CountFollower(ctx, tx, userId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return sqlc.User{}, 0, 0, false, err
+			return model.Profile{}, err
 		}
 	}
 
@@ -124,8 +131,8 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId strin
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return sqlc.User{}, 0, 0, false, err
+		return model.Profile{}, err
 	}
 
-	return user, int32(following), int32(followers), isFollowing, nil
+	return model.Profile{User: user, Follows: int32(following), Followers: int32(followers), Isfollows: isFollowing, Isfollowers: isFollower}, nil
 }

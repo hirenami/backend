@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"api/sqlc"
+	"api/model"
 	"context"
 	"errors"
 	"log"
@@ -112,11 +112,11 @@ func (u *Usecase) DelateFollowUsecase(ctx context.Context, userId string, follow
 	return nil
 }
 
-func (u *Usecase) GetFollowingUsecase(ctx context.Context, userId string) ([]sqlc.User, error) {
+func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) ([]model.Profile, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return []sqlc.User{}, err
+		return nil, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
@@ -124,82 +124,80 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, userId string) ([]sql
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return []sqlc.User{}, err
+		return nil, err
 	} else if !bool {
-		return []sqlc.User{},errors.New("user does not exist")
+		return nil, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
 	follows, err := u.dao.GetFollowing(ctx, tx, userId)
 	if err != nil {
-		return []sqlc.User{}, err
+		return nil, err
 	}
 
-	following := []sqlc.User{}
+	// 結果を格納するためのスライス
+	followsParamsList := make([]model.Profile, len(follows))
 
-	for _, followId := range follows {
-		follow, err := u.dao.GetProfile(ctx, tx, followId)
+	for i, followId := range follows {
+		user, err := u.dao.GetProfile(ctx, tx, followId)
 		if err != nil {
-			return []sqlc.User{}, err
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
 		}
-		following = append(following, follow)
-	}
-	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return []sqlc.User{}, err
-	}
 
-	return following, nil
-}
-
-func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId string) ([]sqlc.User, error) {
-	// トランザクションを開始
-	tx, err := u.dao.Begin()
-	if err != nil {
-		return []sqlc.User{}, err
-	}
-
-	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return []sqlc.User{}, err
-	} else if !bool {
-		return []sqlc.User{}, errors.New("user does not exist")
-	}
-
-	// daoのメソッドにトランザクションを渡して実行
-	followersId, err := u.dao.GetFollower(ctx, tx, userId)
-	if err != nil {
-		return []sqlc.User{}, err
-	}
-
-	followers := []sqlc.User{}
-
-	for _, followerId := range followersId {
-		follower, err := u.dao.GetProfile(ctx, tx, followerId)
+		isFollowing, err := u.dao.IsFollowing(ctx, tx, followId, myId)
 		if err != nil {
-			return []sqlc.User{}, err
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
 		}
-		followers = append(followers, follower)
+
+		isFollower, err := u.dao.IsFollowing(ctx, tx, myId, followId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		following, err := u.dao.CountFollowing(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		followers, err := u.dao.CountFollower(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		// Params構造体にデータをまとめる
+		followsParamsList[i] = model.Profile{
+			User:        user,
+			Follows:     int32(following),
+			Followers:   int32(followers),
+			Isfollows:   isFollowing,
+			Isfollowers: isFollower,
+		}
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return []sqlc.User{}, err
+		return nil, err
 	}
 
-	return followers, nil
+	return followsParamsList, nil
 }
 
-func (u *Usecase) GetFollowCountUsecase(ctx context.Context, userId string) (int32, int32, error) {
+func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId, myId string) ([]model.Profile, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
@@ -207,73 +205,71 @@ func (u *Usecase) GetFollowCountUsecase(ctx context.Context, userId string) (int
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return 0, 0, err
+		return nil, err
 	} else if !bool {
-		return 0, 0, errors.New("user does not exist")
+		return nil, errors.New("user does not exist")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
-	following, err := u.dao.CountFollowing(ctx, tx, userId)
+	followers, err := u.dao.GetFollower(ctx, tx, userId)
 	if err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return 0, 0, err
-		}
+		return nil, err
 	}
 
-	followers, err := u.dao.CountFollower(ctx, tx, userId)
-	if err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return 0, 0, err
+	// 結果を格納するためのスライス
+	followsParamsList := make([]model.Profile, len(followers))
+
+	for i, followersId := range followers {
+		user, err := u.dao.GetProfile(ctx, tx, followersId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isFollowing, err := u.dao.IsFollowing(ctx, tx, followersId, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isFollower, err := u.dao.IsFollowing(ctx, tx, myId, followersId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		following, err := u.dao.CountFollowing(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		followers, err := u.dao.CountFollower(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		// Params構造体にデータをまとめる
+		followsParamsList[i] = model.Profile{
+			User:        user,
+			Follows:     int32(following),
+			Followers:   int32(followers),
+			Isfollows:   isFollowing,
+			Isfollowers: isFollower,
 		}
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
 
-	return int32(following), int32(followers), nil
-}
-
-func (u *Usecase) IsFollowingUsecase(ctx context.Context, userId string, followId string) (bool, error) {
-	// トランザクションを開始
-	tx, err := u.dao.Begin()
-	if err != nil {
-		return false, err
-	}
-
-	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return false, err
-	} else if !bool {
-		return false, errors.New("user does not exist")
-	}
-
-	if bool, err := u.dao.IsUserExists(ctx, tx, followId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return false, err
-	} else if !bool {
-		return false, errors.New("follow user does not exist")
-	}
-
-	// daoのメソッドにトランザクションを渡して実行
-	isFollowing, err := u.dao.IsFollowing(ctx, tx, followId, userId)
-	if err != nil {
-		return false, err
-	}
-
-	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return false, err
-	}
-
-	return isFollowing, nil
+	return followsParamsList, nil
 }

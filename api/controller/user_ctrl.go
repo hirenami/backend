@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"github.com/gorilla/mux"
-	"api/sqlc"
 )
 
 // GET /user/{userId}
@@ -39,24 +38,14 @@ func (c *Controller) GetProfileCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user,following,follower,Isfollow, err := c.Usecase.GetProfileUsecase(ctx,Id, userId)
+	profile, err := c.Usecase.GetProfileUsecase(ctx,Id, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response := struct {
-		User sqlc.User `json:"user"`
-		Following int32 `json:"following"`
-		Follower int32 `json:"follower"`
-		Isfollow bool `json:"isfollow"`
-	}{
-		User: user,
-		Following: following,
-		Follower: follower,
-		Isfollow: Isfollow,
-	}
+	
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(profile)
 
 }
 
@@ -82,14 +71,14 @@ func (c *Controller) GetMyProfileCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	user,_,_,_, err := c.Usecase.GetProfileUsecase(ctx,Id,Id)
+	profile,err := c.Usecase.GetProfileUsecase(ctx,Id,Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(profile)
 
 	
 }

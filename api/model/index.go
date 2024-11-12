@@ -48,3 +48,11 @@ type User struct {
 	Isdeleted   bool      `json:"isdeleted"`
 	Isadmin     bool      `json:"isadmin"`
 }
+
+type Profile struct {
+	User        sqlc.User `json:"user"`
+	Follows     int32     `json:"follows"`
+	Followers   int32     `json:"followers"`
+	Isfollows   bool      `json:"isfollows"`
+	Isfollowers bool      `json:"isfollowers"`
+}
