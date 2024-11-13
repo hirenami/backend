@@ -14,7 +14,7 @@ SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, con
 WHERE tweetId IN (
 	SELECT tweetId FROM hashtags
 	WHERE hashtag = ?
-) AND isDeleted = false ORDER BY createdAt DESC
+) AND isDeleted = false ORDER BY created_at DESC
 `
 
 func (q *Queries) SearchByHashtag(ctx context.Context, hashtag string) ([]Tweet, error) {
@@ -57,7 +57,7 @@ func (q *Queries) SearchByHashtag(ctx context.Context, hashtag string) ([]Tweet,
 
 const searchByKeyword = `-- name: SearchByKeyword :many
 SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
-WHERE content LIKE CONCAT('%', ? , '%') AND isDeleted = false ORDER BY createdAt DESC
+WHERE content LIKE CONCAT('%', ? , '%') AND isDeleted = false ORDER BY created_at DESC
 `
 
 func (q *Queries) SearchByKeyword(ctx context.Context, concat interface{}) ([]Tweet, error) {
@@ -100,7 +100,7 @@ func (q *Queries) SearchByKeyword(ctx context.Context, concat interface{}) ([]Tw
 
 const searchUser = `-- name: SearchUser :many
 SELECT firebaseuid, userid, username, created_at, header_image, icon_image, biography, isprivate, isfrozen, isdeleted, isadmin FROM users
-WHERE username LIKE CONCAT('%', ? , '%') ORDER BY createdAt DESC
+WHERE username LIKE CONCAT('%', ? , '%') ORDER BY created_at DESC
 `
 
 func (q *Queries) SearchUser(ctx context.Context, concat interface{}) ([]User, error) {

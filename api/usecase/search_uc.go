@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"api/sqlc"
 	"api/model"
 	"context"
 	"errors"
@@ -58,9 +57,9 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context, keyword string) ([
 
 		// TweetParamsに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:   tweet,
-			User:    user,
-			Likes:   liked,
+			Tweet:    tweet,
+			User:     user,
+			Likes:    liked,
 			Retweets: retweeted,
 		})
 	}
@@ -73,37 +72,79 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context, keyword string) ([
 	return tweetParamsList, nil
 }
 
-
 // Usecase メソッドの実装
-func (u *Usecase) SearchByUserUsecase(ctx context.Context, keyword string) ([]sqlc.User,error) {
-	
+func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string) ([]model.Profile, error) {
+
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	if keyword == "" {
-		return nil,errors.New("keyword is required")
+		return nil, errors.New("keyword is required")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
-	users,err := u.dao.SearchUser(ctx, tx, keyword)
+	users, err := u.dao.SearchUser(ctx, tx, keyword)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
-		return nil,err
+		return nil, err
+	}
+
+	// 結果を格納するためのスライス
+	UserParamsList := make([]model.Profile, len(users))
+
+	for i, user := range users {
+		// ユーザー情報を取得
+		isFollowing, err := u.dao.IsFollowing(ctx, tx, user.Userid, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isFollower, err := u.dao.IsFollowing(ctx, tx, myId, user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		following, err := u.dao.CountFollowing(ctx, tx, user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		followers, err := u.dao.CountFollower(ctx, tx, user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		// Params構造体にデータをまとめる
+		UserParamsList[i] = model.Profile{
+			User:        user,
+			Follows:     int32(following),
+			Followers:   int32(followers),
+			Isfollows:   isFollowing,
+			Isfollowers: isFollower,
+		}
 	}
 
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	return users,nil
+	return UserParamsList, nil
 }
 
 // Usecase メソッドの実装
@@ -156,9 +197,9 @@ func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, keyword string) ([
 
 		// TweetParamsに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:   tweet,
-			User:    user,
-			Likes:   liked,
+			Tweet:    tweet,
+			User:     user,
+			Likes:    liked,
 			Retweets: retweeted,
 		})
 	}

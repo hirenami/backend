@@ -43,6 +43,8 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/notifications", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetNotificationsCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/notifications/{notificationId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdateNotificationStatusCtrl))).Methods("PUT","OPTIONS")
 
+	r.Handle("/search/{keyword}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.SearchByKeywordCtrl))).Methods("GET","OPTIONS")
+
 	r.HandleFunc("/login", controller.Login)
 	return r
 }

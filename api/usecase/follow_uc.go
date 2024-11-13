@@ -193,7 +193,7 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 	return followsParamsList, nil
 }
 
-func (u *Usecase) GetFollowerUsecase(ctx context.Context, userId, myId string) ([]model.Profile, error) {
+func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) ([]model.Profile, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
