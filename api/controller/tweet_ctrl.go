@@ -162,14 +162,6 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if bool, err := c.Usecase.IsBlockedckUsecase(ctx, userId, Id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	} else if bool {
-		http.Error(w, "This user is blocked", http.StatusUnauthorized)
-		return
-	}
-
 	tweetParams, err := c.Usecase.GetUsersTweetUsecase(ctx, userId,Id)
 	if err != nil {
 		log.Printf("userId=%s", userId)

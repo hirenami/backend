@@ -105,13 +105,6 @@ func (c *Controller) GetFollowingCtrl(w http.ResponseWriter, r *http.Request) {
 
 	userId := mux.Vars(r)["userId"]
 
-	if bool,err :=c.Usecase.IsBlockedckUsecase(ctx, userId,Id)  ; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}else if bool {
-		http.Error(w, "This user is blocked", http.StatusUnauthorized)
-		return
-	}
 
 	following, err := c.Usecase.GetFollowingUsecase(ctx,Id, userId)
 	if err != nil {
@@ -152,14 +145,6 @@ func (c *Controller) GetFollowerCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := mux.Vars(r)["userId"]
-	
-	if bool,err :=c.Usecase.IsBlockedckUsecase(ctx, userId,Id)  ; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}else if bool {
-		http.Error(w, "This user is blocked", http.StatusUnauthorized)
-		return
-	}
 	
 	follower, err := c.Usecase.GetFollowerUsecase(ctx, Id,userId)
 	if err != nil {

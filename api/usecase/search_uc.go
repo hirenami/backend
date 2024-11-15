@@ -8,7 +8,7 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) SearchByKeywordUsecase(ctx context.Context, keyword string) ([]model.TweetParams, error) {
+func (u *Usecase) SearchByKeywordUsecase(ctx context.Context,myId, keyword string) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -55,12 +55,30 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context, keyword string) ([
 			return nil, err
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid,myId)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isprivate := !isfollowing && user.Isprivate 
+
+		if isblocked || isprivate || tweet.Isdeleted {
+			continue
+		}
+
 		// TweetParamsに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
 			Tweet:    tweet,
 			User:     user,
 			Likes:    liked,
 			Retweets: retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
 		})
 	}
 
@@ -128,6 +146,14 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			}
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+		isprivate := !isFollowing && user.Isprivate
+
 		// Params構造体にデータをまとめる
 		UserParamsList[i] = model.Profile{
 			User:        user,
@@ -135,6 +161,8 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			Followers:   int32(followers),
 			Isfollows:   isFollowing,
 			Isfollowers: isFollower,
+			Isblocked:   isblocked,
+			Isprivate:   isprivate,
 		}
 	}
 
@@ -148,7 +176,7 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 }
 
 // Usecase メソッドの実装
-func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, keyword string) ([]model.TweetParams, error) {
+func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, myId,keyword string) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -195,12 +223,32 @@ func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, keyword string) ([
 			return nil, err
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+		isprivate := !isfollowing && user.Isprivate
+
+		if isblocked || isprivate || tweet.Isdeleted {
+			continue
+		}
+
 		// TweetParamsに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
 			Tweet:    tweet,
 			User:     user,
 			Likes:    liked,
 			Retweets: retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
 		})
 	}
 

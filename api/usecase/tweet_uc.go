@@ -83,16 +83,6 @@ func (u *Usecase) EraseTweetUsecase(ctx context.Context, myId string, tweetId in
 		return err
 	}
 
-	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return err
-	} else if !bool {
-		return errors.New("tweet does not exist")
-	}
-
 	if bool, err := u.dao.IsUserExists(ctx, tx, myId); err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
@@ -138,16 +128,6 @@ func (u *Usecase) EditTweetUsecase(ctx context.Context, myId string, tweetId int
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return err
-	}
-
-	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return err
-	} else if !bool {
-		return errors.New("tweet does not exist")
 	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, myId); err != nil {
@@ -243,6 +223,24 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 		return nil, errors.New("user does not exist")
 	}
 
+	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, userId)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	isfollowing , err := u.dao.IsFollowing(ctx, tx, userId,myId)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	user , err := u.dao.GetProfile(ctx, tx, userId)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	isprivate := !isfollowing && user.Isprivate 
+
+
 	// ユーザーのツイートを取得
 	tweets, err := u.dao.GetUsersTweet(ctx, tx, userId)
 	if err != nil {
@@ -289,6 +287,8 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 			User:     user,
 			Likes:    liked,
 			Retweets: retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
 		}
 	}
 
@@ -307,15 +307,6 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
     tx, err := u.dao.Begin()
     if err != nil {
         return model.TweetParams{}, err
-    }
-
-    exists, err := u.dao.IsTweetExists(ctx, tx, tweetId)
-    if err != nil {
-        tx.Rollback()
-        return model.TweetParams{}, err
-    } else if !exists {
-        tx.Rollback()
-        return model.TweetParams{}, errors.New("tweet does not exist")
     }
 
     // daoのメソッドにトランザクションを渡して実行
@@ -343,6 +334,20 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
         return model.TweetParams{}, err
     }
 
+	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+	if err != nil {
+		tx.Rollback()
+		return model.TweetParams{}, err
+	}
+	log.Println(isblocked,myId,tweet.Userid)
+
+	isfollowing , err := u.dao.IsFollowing(ctx, tx,tweet.Userid,myId)
+	if err != nil {
+		tx.Rollback()
+		return model.TweetParams{}, err
+	}
+	isprivate := !isfollowing && user.Isprivate
+
     // トランザクションをコミット
     err = tx.Commit()
     if err != nil {
@@ -355,5 +360,7 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
         User:      user,
         Likes:     liked,
         Retweets: retweeted,
+		Isblocked: isblocked,
+		Isprivate: isprivate,
     }, nil
 }

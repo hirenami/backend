@@ -74,14 +74,14 @@ func (u *Usecase) CreateProfileUsecase(ctx context.Context, userId, username, bi
 	return nil
 }
 
-func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId string) (model.Profile, error) {
+func (u *Usecase) GetProfileUsecase(ctx context.Context, myId string, userId string) (model.Profile, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return model.Profile{}, err
 	}
 
-	if bool, err := u.dao.IsUserExists(ctx, tx, Id); err != nil {
+	if bool, err := u.dao.IsUserExists(ctx, tx, myId); err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
@@ -99,14 +99,14 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId strin
 		}
 	}
 
-	isFollowing, err := u.dao.IsFollowing(ctx, tx, userId, Id)
+	isFollowing, err := u.dao.IsFollowing(ctx, tx, userId, myId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return model.Profile{}, err
 		}
 	}
 
-	isFollower, err := u.dao.IsFollowing(ctx, tx, Id, userId)
+	isFollower, err := u.dao.IsFollowing(ctx, tx, myId, userId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return model.Profile{}, err
@@ -127,6 +127,14 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId strin
 		}
 	}
 
+	isblocked, err := u.dao.IsBlocked(ctx, tx, myId, userId)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.Profile{}, err
+		}
+	}
+
+	isprivate := (!isFollowing && user.Isprivate)
 
 	// トランザクションをコミット
 	err = tx.Commit()
@@ -134,5 +142,5 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, Id string, userId strin
 		return model.Profile{}, err
 	}
 
-	return model.Profile{User: user, Follows: int32(following), Followers: int32(followers), Isfollows: isFollowing, Isfollowers: isFollower}, nil
+	return model.Profile{User: user, Follows: int32(following), Followers: int32(followers), Isfollows: isFollowing, Isfollowers: isFollower, Isblocked: isblocked, Isprivate: isprivate}, nil
 }

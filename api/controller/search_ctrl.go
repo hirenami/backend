@@ -19,8 +19,19 @@ func (c *Controller) SearchByKeywordCtrl(w http.ResponseWriter, r *http.Request)
 	setCORSHeaders(w)
 	keyword := mux.Vars(r)["keyword"]
 
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
 	ctx := context.Background()
-	tweets, err := c.Usecase.SearchByKeywordUsecase(ctx, keyword)
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tweets, err := c.Usecase.SearchByKeywordUsecase(ctx,Id, keyword)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

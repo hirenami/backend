@@ -59,7 +59,7 @@ WHERE tweetId = ? and isDeleted=false;
 SELECT EXISTS (
     SELECT 1 
     FROM tweets 
-	WHERE tweetId = ? and isDeleted = false
+	WHERE tweetId = ?
 );
 
 -- name: GetUserId :one

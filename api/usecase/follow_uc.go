@@ -174,6 +174,18 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 			}
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, followId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+		if isblocked {
+			continue
+		}
+
+		isprivate := !isFollowing && user.Isprivate
+
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{
 			User:        user,
@@ -181,6 +193,8 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 			Followers:   int32(followers),
 			Isfollows:   isFollowing,
 			Isfollowers: isFollower,
+			Isblocked:   isblocked,
+			Isprivate:  isprivate,
 		}
 	}
 
@@ -255,6 +269,18 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 			}
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, followersId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+		if isblocked {
+			continue
+		}
+
+		isprivate := !isFollowing && user.Isprivate
+
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{
 			User:        user,
@@ -262,6 +288,8 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 			Followers:   int32(followers),
 			Isfollows:   isFollowing,
 			Isfollowers: isFollower,
+			Isblocked:   isblocked,
+			Isprivate:  isprivate,
 		}
 	}
 

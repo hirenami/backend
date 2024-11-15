@@ -10,6 +10,8 @@ type TweetParams struct {
 	User     sqlc.User  `json:"user"`
 	Likes    bool       `json:"likes"`
 	Retweets bool       `json:"retweets"`
+	Isblocked   bool      `json:"isblocked"`
+	Isprivate   bool      `json:"isprivate"`
 }
 
 type NotificationParams struct {
@@ -55,4 +57,6 @@ type Profile struct {
 	Followers   int32     `json:"followers"`
 	Isfollows   bool      `json:"isfollows"`
 	Isfollowers bool      `json:"isfollowers"`
+	Isblocked   bool      `json:"isblocked"`
+	Isprivate   bool      `json:"isprivate"`
 }

@@ -206,12 +206,30 @@ func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, myId 
 			return nil, err
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid,myId)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isprivate := !isfollowing && user.Isprivate 
+
+		if isblocked || isprivate || tweet.Isdeleted {
+			continue
+		}
+
 		// TweetParamsに情報を詰めてリストに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
 			Tweet:    tweet,
 			User:     user,
 			Likes:    liked,
 			Retweets: retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
 		})
 	}
 
@@ -278,12 +296,30 @@ func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, myId strin
 			return nil, err
 		}
 
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, reply.Userid)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isfollowing , err := u.dao.IsFollowing(ctx, tx,reply.Userid,myId)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isprivate := !isfollowing && user.Isprivate
+
+		if isblocked || isprivate || reply.Isdeleted {
+			continue
+		}
+
 		// TweetParamsに情報を詰めてリストに追加
 		tweetParamsList = append(tweetParamsList, model.TweetParams{
 			Tweet:    reply,
 			User:     user,
 			Likes:    liked,
 			Retweets: retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
 		})
 	}
 

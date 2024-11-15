@@ -29,15 +29,7 @@ func (c *Controller) GetProfileCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	if bool,err :=c.Usecase.IsBlockedckUsecase(ctx, userId,Id)  ; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}else if bool {
-		http.Error(w, "This user is blocked", http.StatusUnauthorized)
-		return
-	}
-
+	
 	profile, err := c.Usecase.GetProfileUsecase(ctx,Id, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -317,7 +317,7 @@ const isTweetExists = `-- name: IsTweetExists :one
 SELECT EXISTS (
     SELECT 1 
     FROM tweets 
-	WHERE tweetId = ? and isDeleted = false
+	WHERE tweetId = ?
 )
 `
 
