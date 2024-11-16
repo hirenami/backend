@@ -16,14 +16,10 @@ UPDATE users
 SET isAdmin = ?
 WHERE userId = ?;
 
--- name: GetIsPrivate :one
-SELECT isPrivate FROM users WHERE userId = ?;
-
--- name: GetIsDeleted :one
-SELECT isDeleted FROM users WHERE userId = ?;
-
--- name: GetIsAdmin :one
-SELECT isAdmin FROM users WHERE userId = ?;
+-- name: CreateIsPremium :exec
+UPDATE users
+SET isPremium = true
+WHERE userId = ?;
 
 -- name: UpdateUsername :exec
 UPDATE users

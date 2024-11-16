@@ -56,6 +56,17 @@ func (q *Queries) CreateIsDeleted(ctx context.Context, arg CreateIsDeletedParams
 	return err
 }
 
+const createIsPremium = `-- name: CreateIsPremium :exec
+UPDATE users
+SET isPremium = true
+WHERE userId = ?
+`
+
+func (q *Queries) CreateIsPremium(ctx context.Context, userid string) error {
+	_, err := q.db.ExecContext(ctx, createIsPremium, userid)
+	return err
+}
+
 const createIsPrivate = `-- name: CreateIsPrivate :exec
 UPDATE users
 SET isPrivate = ?
@@ -81,39 +92,6 @@ func (q *Queries) GetIdByUID(ctx context.Context, firebaseuid string) (string, e
 	var userid string
 	err := row.Scan(&userid)
 	return userid, err
-}
-
-const getIsAdmin = `-- name: GetIsAdmin :one
-SELECT isAdmin FROM users WHERE userId = ?
-`
-
-func (q *Queries) GetIsAdmin(ctx context.Context, userid string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, getIsAdmin, userid)
-	var isadmin bool
-	err := row.Scan(&isadmin)
-	return isadmin, err
-}
-
-const getIsDeleted = `-- name: GetIsDeleted :one
-SELECT isDeleted FROM users WHERE userId = ?
-`
-
-func (q *Queries) GetIsDeleted(ctx context.Context, userid string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, getIsDeleted, userid)
-	var isdeleted bool
-	err := row.Scan(&isdeleted)
-	return isdeleted, err
-}
-
-const getIsPrivate = `-- name: GetIsPrivate :one
-SELECT isPrivate FROM users WHERE userId = ?
-`
-
-func (q *Queries) GetIsPrivate(ctx context.Context, userid string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, getIsPrivate, userid)
-	var isprivate bool
-	err := row.Scan(&isprivate)
-	return isprivate, err
 }
 
 const isUserExists = `-- name: IsUserExists :one
