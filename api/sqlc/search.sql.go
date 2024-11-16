@@ -99,7 +99,7 @@ func (q *Queries) SearchByKeyword(ctx context.Context, concat interface{}) ([]Tw
 }
 
 const searchUser = `-- name: SearchUser :many
-SELECT firebaseuid, userid, username, created_at, header_image, icon_image, biography, isprivate, isfrozen, isdeleted, isadmin FROM users
+SELECT firebaseuid, userid, username, created_at, header_image, icon_image, biography, isprivate, ispremium, isdeleted, isadmin FROM users
 WHERE username LIKE CONCAT('%', ? , '%') ORDER BY created_at DESC
 `
 
@@ -121,7 +121,7 @@ func (q *Queries) SearchUser(ctx context.Context, concat interface{}) ([]User, e
 			&i.IconImage,
 			&i.Biography,
 			&i.Isprivate,
-			&i.Isfrozen,
+			&i.Ispremium,
 			&i.Isdeleted,
 			&i.Isadmin,
 		); err != nil {

@@ -6,11 +6,6 @@ UPDATE users
 SET isPrivate = ?
 WHERE userId = ?;
 
--- name: CreateIsFrozen :exec
-UPDATE users
-SET isFrozen = ?
-WHERE userId = ?;
-
 -- name: CreateIsDeleted :exec
 UPDATE users
 SET isDeleted = ?
@@ -23,9 +18,6 @@ WHERE userId = ?;
 
 -- name: GetIsPrivate :one
 SELECT isPrivate FROM users WHERE userId = ?;
-
--- name: GetIsFrozen :one
-SELECT isFrozen FROM users WHERE userId = ?;
 
 -- name: GetIsDeleted :one
 SELECT isDeleted FROM users WHERE userId = ?;

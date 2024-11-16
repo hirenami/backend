@@ -56,22 +56,6 @@ func (q *Queries) CreateIsDeleted(ctx context.Context, arg CreateIsDeletedParams
 	return err
 }
 
-const createIsFrozen = `-- name: CreateIsFrozen :exec
-UPDATE users
-SET isFrozen = ?
-WHERE userId = ?
-`
-
-type CreateIsFrozenParams struct {
-	Isfrozen bool   `json:"isfrozen"`
-	Userid   string `json:"userid"`
-}
-
-func (q *Queries) CreateIsFrozen(ctx context.Context, arg CreateIsFrozenParams) error {
-	_, err := q.db.ExecContext(ctx, createIsFrozen, arg.Isfrozen, arg.Userid)
-	return err
-}
-
 const createIsPrivate = `-- name: CreateIsPrivate :exec
 UPDATE users
 SET isPrivate = ?
@@ -119,17 +103,6 @@ func (q *Queries) GetIsDeleted(ctx context.Context, userid string) (bool, error)
 	var isdeleted bool
 	err := row.Scan(&isdeleted)
 	return isdeleted, err
-}
-
-const getIsFrozen = `-- name: GetIsFrozen :one
-SELECT isFrozen FROM users WHERE userId = ?
-`
-
-func (q *Queries) GetIsFrozen(ctx context.Context, userid string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, getIsFrozen, userid)
-	var isfrozen bool
-	err := row.Scan(&isfrozen)
-	return isfrozen, err
 }
 
 const getIsPrivate = `-- name: GetIsPrivate :one

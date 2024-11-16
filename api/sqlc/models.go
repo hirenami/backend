@@ -176,7 +176,7 @@ type User struct {
 	IconImage   string    `json:"icon_image"`
 	Biography   string    `json:"biography"`
 	Isprivate   bool      `json:"isprivate"`
-	Isfrozen    bool      `json:"isfrozen"`
+	Ispremium   bool      `json:"ispremium"`
 	Isdeleted   bool      `json:"isdeleted"`
 	Isadmin     bool      `json:"isadmin"`
 }
