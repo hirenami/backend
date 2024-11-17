@@ -19,9 +19,6 @@ func (u *Usecase) CreateTweetUsecase(ctx context.Context, myId, content, media_u
 	if content == ""  && media_url == "" {
 		return errors.New("content is empty")
 	}
-	if len(content) > 140 {
-		return errors.New("content is too long")
-	}
 
 	if bool, err := u.dao.IsUserExists(ctx, tx, myId); err != nil {
 		// エラーが発生した場合、ロールバック
@@ -42,6 +39,7 @@ func (u *Usecase) CreateTweetUsecase(ctx context.Context, myId, content, media_u
 		}
 		return err
 	}
+	log.Println(content,media_url)
 	//TweetIDを取得
 	tweetId, err := u.dao.GetLastInsertID(ctx, tx)
 	if err != nil {

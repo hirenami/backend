@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"api/model"
 )
 
 // Usecase メソッドの実装
@@ -106,4 +107,62 @@ func (u *Usecase) DeleteDm(ctx context.Context, dmsid int32) error {
 	}
 
 	return err
+}
+
+func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.Conversation, error) {
+	// トランザクションを開始
+	tx, err := u.dao.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback() // コミットされていなければロールバック
+
+	// ユーザーの存在確認
+	if exists, err := u.dao.IsUserExists(ctx, tx, myId); err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, errors.New("user not found")
+	}
+
+	// 自分が関係するメッセージを取得
+	dms, err := u.dao.GetAllDms(ctx, tx, myId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 他ユーザーごとにメッセージを整理
+	conversations := make(map[string]model.Conversation)
+	for _, dm := range dms {
+		// 自分以外のユーザー ID を特定
+		partnerId := dm.Senderid
+		if dm.Senderid == myId {
+			partnerId = dm.Receiverid
+		}
+
+		user, err := u.dao.GetProfile(ctx, tx, partnerId)
+		if err != nil {
+			return nil, err
+		}
+
+		// 既存のデータを取得、なければ新規作成
+		conv, exists := conversations[partnerId]
+		if !exists {
+			conv = model.Conversation{
+				User: user,
+				Dms:  []sqlc.Dm{},
+			}
+		}
+
+		// DM を追加
+		conv.Dms = append(conv.Dms, dm)
+		conversations[partnerId] = conv
+		
+	}
+
+	// トランザクションをコミット
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return conversations, nil
 }

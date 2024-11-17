@@ -10,11 +10,14 @@ import (
 )
 
 const createDm = `-- name: CreateDm :exec
-INSERT INTO dms (
-	senderId, receiverId, content , media_url
-) VALUES (
-	?, ?, ?, ?
-)
+INSERT INTO
+    dms (
+        senderId,
+        receiverId,
+        content,
+        media_url
+    )
+VALUES (?, ?, ?, ?)
 `
 
 type CreateDmParams struct {
@@ -43,6 +46,58 @@ func (q *Queries) DeleteDm(ctx context.Context, dmsid int32) error {
 	return err
 }
 
+const getAllDms = `-- name: GetAllDms :many
+SELECT
+    dmsId,
+    senderId,
+    receiverId,
+    createdAt,
+    content,
+    media_url,
+    status
+FROM dms
+WHERE
+    senderId = ?
+    OR receiverId = ?
+ORDER BY createdAt DESC
+`
+
+type GetAllDmsParams struct {
+	Senderid   string `json:"senderid"`
+	Receiverid string `json:"receiverid"`
+}
+
+func (q *Queries) GetAllDms(ctx context.Context, arg GetAllDmsParams) ([]Dm, error) {
+	rows, err := q.db.QueryContext(ctx, getAllDms, arg.Senderid, arg.Receiverid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Dm{}
+	for rows.Next() {
+		var i Dm
+		if err := rows.Scan(
+			&i.Dmsid,
+			&i.Senderid,
+			&i.Receiverid,
+			&i.Createdat,
+			&i.Content,
+			&i.MediaUrl,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getDm = `-- name: GetDm :one
 SELECT dmsid, senderid, receiverid, createdat, content, media_url, status FROM dms WHERE dmsId = ?
 `
@@ -63,8 +118,17 @@ func (q *Queries) GetDm(ctx context.Context, dmsid int32) (Dm, error) {
 }
 
 const getDms = `-- name: GetDms :many
-SELECT dmsid, senderid, receiverid, createdat, content, media_url, status FROM dms 
-WHERE (senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?) ORDER BY createdAt DESC
+SELECT dmsid, senderid, receiverid, createdat, content, media_url, status
+FROM dms
+WHERE (
+        senderId = ?
+        AND receiverId = ?
+    )
+    OR (
+        senderId = ?
+        AND receiverId = ?
+    )
+ORDER BY createdAt DESC
 `
 
 type GetDmsParams struct {
@@ -111,13 +175,15 @@ func (q *Queries) GetDms(ctx context.Context, arg GetDmsParams) ([]Dm, error) {
 }
 
 const getDmsUsers = `-- name: GetDmsUsers :many
-SELECT DISTINCT 
-    CASE 
-        WHEN senderId = ? THEN receiverId 
-        ELSE senderId 
+SELECT DISTINCT
+    CASE
+        WHEN senderId = ? THEN receiverId
+        ELSE senderId
     END AS otherUserId
 FROM dms
-WHERE senderId = ? OR receiverId = ?
+WHERE
+    senderId = ?
+    OR receiverId = ?
 `
 
 type GetDmsUsersParams struct {
@@ -150,8 +216,17 @@ func (q *Queries) GetDmsUsers(ctx context.Context, arg GetDmsUsersParams) ([]int
 }
 
 const getLastMessages = `-- name: GetLastMessages :many
-SELECT dmsid, senderid, receiverid, createdat, content, media_url, status FROM dms 
-WHERE (senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?) ORDER BY createdAt DESC
+SELECT dmsid, senderid, receiverid, createdat, content, media_url, status
+FROM dms
+WHERE (
+        senderId = ?
+        AND receiverId = ?
+    )
+    OR (
+        senderId = ?
+        AND receiverId = ?
+    )
+ORDER BY createdAt DESC
 LIMIT 1
 `
 
@@ -200,8 +275,16 @@ func (q *Queries) GetLastMessages(ctx context.Context, arg GetLastMessagesParams
 
 const setDmStatus = `-- name: SetDmStatus :exec
 UPDATE dms
-SET status = 'read'
-WHERE (senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?)
+SET
+    status = 'read'
+WHERE (
+        senderId = ?
+        AND receiverId = ?
+    )
+    OR (
+        senderId = ?
+        AND receiverId = ?
+    )
 `
 
 type SetDmStatusParams struct {

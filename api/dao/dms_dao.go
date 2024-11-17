@@ -86,3 +86,16 @@ func (d *Dao) SetDmStatus(ctx context.Context, tx *sql.Tx, senderId, receiverId 
 
 	return txQueries.SetDmStatus(ctx, args)
 }
+
+func (d *Dao) GetAllDms(ctx context.Context, tx *sql.Tx, userId string) ([]sqlc.Dm, error) {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	args := sqlc.GetAllDmsParams{
+		Senderid:   userId,
+		Receiverid: userId,
+	}
+
+
+	return txQueries.GetAllDms(ctx,args)
+}

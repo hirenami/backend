@@ -45,7 +45,11 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/search/{keyword}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.SearchByKeywordCtrl))).Methods("GET","OPTIONS")
 
+	r.Handle("/user/private", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.ChangePrivacyCtrl))).Methods("PUT","OPTIONS")
+
 	r.Handle("/premium", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdatePremiumCtrl))).Methods("PATCH","OPTIONS")
+
+	r.Handle("/dm", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateDm))).Methods("GET","OPTIONS")
 
 	r.HandleFunc("/login", controller.Login)
 	return r

@@ -60,3 +60,8 @@ type Profile struct {
 	Isblocked   bool      `json:"isblocked"`
 	Isprivate   bool      `json:"isprivate"`
 }
+
+type Conversation struct {
+	User sqlc.User    // ユーザー情報
+	Dms  []sqlc.Dm    // DM一覧
+}

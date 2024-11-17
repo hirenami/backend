@@ -97,3 +97,37 @@ func (c *Controller) DeleteAccountCtrl(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+//PUT /user/isprivate
+
+func (c *Controller) ChangePrivacyCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var isPrivate bool
+	err = json.NewDecoder(r.Body).Decode(&isPrivate)
+	if err != nil {
+		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
+
+	err = c.Usecase.UpdatePrivateUsecase(ctx, userId, isPrivate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

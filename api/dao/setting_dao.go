@@ -46,12 +46,12 @@ func (d *Dao) CreateIsDeleted(ctx context.Context, tx *sql.Tx, Isadmin bool, use
 	return txQueries.CreateIsDeleted(ctx, arg)
 }
 
-func (d *Dao) CreateIsPrivate(ctx context.Context, tx *sql.Tx, Isadmin bool, userId string) error {
+func (d *Dao) CreateIsPrivate(ctx context.Context, tx *sql.Tx, Isprivate bool, userId string) error {
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
 	arg := sqlc.CreateIsPrivateParams{
-		Isprivate: Isadmin,
+		Isprivate: Isprivate,
 		Userid:    userId,
 	}
 
