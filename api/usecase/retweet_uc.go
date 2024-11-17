@@ -54,16 +54,7 @@ func (u *Usecase) CreateRetweetUsecase(ctx context.Context, userId string, retwe
 		return err
 	}
 
-	_retweetId, err := u.dao.GetLastInsertID(ctx, tx)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return err
-	}
-
-	if err := u.dao.CreateNotification(ctx, tx, userId, repid, "retweet", int32(_retweetId)); err != nil {
+	if err := u.dao.CreateNotification(ctx, tx, userId, repid, "retweet", int32(retweetId)); err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
