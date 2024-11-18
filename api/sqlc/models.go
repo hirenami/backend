@@ -134,6 +134,17 @@ type Like struct {
 	Createdat time.Time `json:"createdat"`
 }
 
+type Listing struct {
+	Listingid          int32     `json:"listingid"`
+	Userid             string    `json:"userid"`
+	Tweetid            int32     `json:"tweetid"`
+	CreatedAt          time.Time `json:"created_at"`
+	Listingname        string    `json:"listingname"`
+	Listingdescription string    `json:"listingdescription"`
+	Listingprice       string    `json:"listingprice"`
+	Stock              int32     `json:"stock"`
+}
+
 type Notification struct {
 	Notificationsid int32               `json:"notificationsid"`
 	Senderid        string              `json:"senderid"`
@@ -142,6 +153,13 @@ type Notification struct {
 	Createdat       time.Time           `json:"createdat"`
 	Status          NotificationsStatus `json:"status"`
 	Contentid       int32               `json:"contentid"`
+}
+
+type Purchase struct {
+	Purchaseid int32     `json:"purchaseid"`
+	Userid     string    `json:"userid"`
+	Listingid  int32     `json:"listingid"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Relation struct {
@@ -156,6 +174,7 @@ type Tweet struct {
 	Retweetid   int32     `json:"retweetid"`
 	Isquote     bool      `json:"isquote"`
 	Isreply     bool      `json:"isreply"`
+	Isreview    int32     `json:"isreview"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Content     string    `json:"content"`

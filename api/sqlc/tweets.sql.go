@@ -100,7 +100,7 @@ func (q *Queries) EditTweet(ctx context.Context, arg EditTweetParams) error {
 }
 
 const getQuotes = `-- name: GetQuotes :many
-SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
+SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE retweetId = ? and isQuote = true and isDeleted = false ORDER BY created_at DESC
 `
 
@@ -119,6 +119,7 @@ func (q *Queries) GetQuotes(ctx context.Context, retweetid int32) ([]Tweet, erro
 			&i.Retweetid,
 			&i.Isquote,
 			&i.Isreply,
+			&i.Isreview,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Content,
@@ -195,7 +196,7 @@ func (q *Queries) GetRetweetsCount(ctx context.Context, tweetid int32) (int32, e
 }
 
 const getTweet = `-- name: GetTweet :one
-SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
+SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE tweetId = ?
 `
 
@@ -208,6 +209,7 @@ func (q *Queries) GetTweet(ctx context.Context, tweetid int32) (Tweet, error) {
 		&i.Retweetid,
 		&i.Isquote,
 		&i.Isreply,
+		&i.Isreview,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Content,
@@ -251,7 +253,7 @@ func (q *Queries) GetUserId(ctx context.Context, tweetid int32) (string, error) 
 }
 
 const getUsersTweets = `-- name: GetUsersTweets :many
-SELECT tweetid, userid, retweetid, isquote, isreply, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets 
+SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets 
 WHERE userId = ? and isReply = false and isDeleted = false ORDER BY created_at DESC
 `
 
@@ -270,6 +272,7 @@ func (q *Queries) GetUsersTweets(ctx context.Context, userid string) ([]Tweet, e
 			&i.Retweetid,
 			&i.Isquote,
 			&i.Isreply,
+			&i.Isreview,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Content,
