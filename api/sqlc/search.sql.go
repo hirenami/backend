@@ -10,7 +10,7 @@ import (
 )
 
 const searchByHashtag = `-- name: SearchByHashtag :many
-SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
+SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE tweetId IN (
 	SELECT tweetId FROM hashtags
 	WHERE hashtag = ?
@@ -32,7 +32,7 @@ func (q *Queries) SearchByHashtag(ctx context.Context, hashtag string) ([]Tweet,
 			&i.Retweetid,
 			&i.Isquote,
 			&i.Isreply,
-			&i.Isreview,
+			&i.Review,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Content,
@@ -57,7 +57,7 @@ func (q *Queries) SearchByHashtag(ctx context.Context, hashtag string) ([]Tweet,
 }
 
 const searchByKeyword = `-- name: SearchByKeyword :many
-SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
+SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE content LIKE CONCAT('%', ? , '%') AND isDeleted = false ORDER BY created_at DESC
 `
 
@@ -76,7 +76,7 @@ func (q *Queries) SearchByKeyword(ctx context.Context, concat interface{}) ([]Tw
 			&i.Retweetid,
 			&i.Isquote,
 			&i.Isreply,
-			&i.Isreview,
+			&i.Review,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Content,

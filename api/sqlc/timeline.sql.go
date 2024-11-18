@@ -10,7 +10,7 @@ import (
 )
 
 const timeline = `-- name: Timeline :many
-SELECT tweetid, userid, retweetid, isquote, isreply, isreview, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
+SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE userId IN (
 	SELECT followerId FROM follows
 	WHERE followingId = ?
@@ -32,7 +32,7 @@ func (q *Queries) Timeline(ctx context.Context, followingid string) ([]Tweet, er
 			&i.Retweetid,
 			&i.Isquote,
 			&i.Isreply,
-			&i.Isreview,
+			&i.Review,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Content,

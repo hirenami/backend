@@ -174,7 +174,7 @@ type Tweet struct {
 	Retweetid   int32     `json:"retweetid"`
 	Isquote     bool      `json:"isquote"`
 	Isreply     bool      `json:"isreply"`
-	Isreview    int32     `json:"isreview"`
+	Review      int32     `json:"review"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Content     string    `json:"content"`
