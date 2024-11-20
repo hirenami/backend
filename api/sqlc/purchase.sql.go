@@ -10,7 +10,7 @@ import (
 )
 
 const getPurchase = `-- name: GetPurchase :one
-SELECT purchaseid, userid, listingid, created_at from purchase
+SELECT purchaseid, userid, listingid, created_at, status from purchase
 WHERE purchaseId = ?
 `
 
@@ -22,12 +22,13 @@ func (q *Queries) GetPurchase(ctx context.Context, purchaseid int32) (Purchase, 
 		&i.Userid,
 		&i.Listingid,
 		&i.CreatedAt,
+		&i.Status,
 	)
 	return i, err
 }
 
 const getUserPurchases = `-- name: GetUserPurchases :many
-SELECT purchaseid, userid, listingid, created_at from purchase
+SELECT purchaseid, userid, listingid, created_at, status from purchase
 WHERE userId = ?
 `
 
@@ -45,6 +46,7 @@ func (q *Queries) GetUserPurchases(ctx context.Context, userid string) ([]Purcha
 			&i.Userid,
 			&i.Listingid,
 			&i.CreatedAt,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}

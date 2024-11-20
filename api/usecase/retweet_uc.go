@@ -107,14 +107,8 @@ func (u *Usecase) CreateQuoteUsecase(ctx context.Context, userId string, retweet
 	}
 
 	//バリデーション
-	if content == "" {
+	if content == "" && media_url == "" {
 		return errors.New("content is empty")
-	}
-	if len(content) > 140 {
-		return errors.New("content is too long")
-	}
-	if media_url != "" && len(media_url) > 255 {
-		return errors.New("media_url is too long")
 	}
 
 	// daoのメソッドにトランザクションを渡して実行

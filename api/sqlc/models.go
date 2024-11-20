@@ -94,6 +94,50 @@ func (ns NullNotificationsStatus) Value() (driver.Value, error) {
 	return string(ns.NotificationsStatus), nil
 }
 
+type PurchaseStatus string
+
+const (
+	PurchaseStatusListing   PurchaseStatus = "listing"
+	PurchaseStatusCompleted PurchaseStatus = "completed"
+	PurchaseStatusCancelled PurchaseStatus = "cancelled"
+	PurchaseStatusPurchased PurchaseStatus = "purchased"
+)
+
+func (e *PurchaseStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PurchaseStatus(s)
+	case string:
+		*e = PurchaseStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PurchaseStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPurchaseStatus struct {
+	PurchaseStatus PurchaseStatus `json:"purchase_status"`
+	Valid          bool           `json:"valid"` // Valid is true if PurchaseStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPurchaseStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PurchaseStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PurchaseStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPurchaseStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PurchaseStatus), nil
+}
+
 type Block struct {
 	Blockerid string    `json:"blockerid"`
 	Blockedid string    `json:"blockedid"`
@@ -156,10 +200,11 @@ type Notification struct {
 }
 
 type Purchase struct {
-	Purchaseid int32     `json:"purchaseid"`
-	Userid     string    `json:"userid"`
-	Listingid  int32     `json:"listingid"`
-	CreatedAt  time.Time `json:"created_at"`
+	Purchaseid int32          `json:"purchaseid"`
+	Userid     string         `json:"userid"`
+	Listingid  int32          `json:"listingid"`
+	CreatedAt  time.Time      `json:"created_at"`
+	Status     PurchaseStatus `json:"status"`
 }
 
 type Relation struct {

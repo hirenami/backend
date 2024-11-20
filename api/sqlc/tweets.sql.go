@@ -225,7 +225,7 @@ func (q *Queries) GetTweet(ctx context.Context, tweetid int32) (Tweet, error) {
 
 const getTweetId = `-- name: GetTweetId :one
 SELECT tweetId FROM tweets
-WHERE retweetId = ? and userId = ? and isDeleted = false
+WHERE retweetId = ? and userId = ? and isDeleted = false and isQuote = false
 `
 
 type GetTweetIdParams struct {
@@ -300,7 +300,7 @@ const isRetweet = `-- name: IsRetweet :one
 SELECT EXISTS (
 	SELECT 1 
 	FROM tweets 
-	WHERE retweetId = ? and isDeleted = false and userId = ?
+	WHERE retweetId = ? and isDeleted = false and userId = ? and isQuote = false
 )
 `
 

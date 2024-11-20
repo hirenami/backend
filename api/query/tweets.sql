@@ -78,9 +78,9 @@ WHERE tweetId = ?;
 SELECT EXISTS (
 	SELECT 1 
 	FROM tweets 
-	WHERE retweetId = ? and isDeleted = false and userId = ?
+	WHERE retweetId = ? and isDeleted = false and userId = ? and isQuote = false
 );
 
 -- name: GetTweetId :one
 SELECT tweetId FROM tweets
-WHERE retweetId = ? and userId = ? and isDeleted = false;
+WHERE retweetId = ? and userId = ? and isDeleted = false and isQuote = false;
