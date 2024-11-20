@@ -1,17 +1,32 @@
+# ビルドステージ
 FROM golang:1.21 as build
 
-WORKDIR /cd
+# 作業ディレクトリを設定
+WORKDIR /api
 
+# 依存関係ファイルを追加
+ADD go.mod ./
+ADD go.sum ./
+
+# 依存関係をダウンロード
+RUN go mod download
+
+# アプリケーションソースコードを追加
 ADD main.go ./
 
-RUN go build -o main /cd/main.go
+# アプリケーションをビルド
+RUN go build -o main ./main.go
 
+# 実行ステージ
 FROM debian:stable-slim as app
 
-WORKDIR /cd
+WORKDIR /api
 
-COPY --from=build /cd/main .
+# ビルド成果物をコピー
+COPY --from=build /api/main .
 
+# 必要なポートを公開
 EXPOSE 8080
 
-CMD /cd/main
+# アプリケーションを実行
+CMD ["/api/main"]
