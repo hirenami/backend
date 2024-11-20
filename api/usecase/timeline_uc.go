@@ -77,6 +77,7 @@ func (u *Usecase) GetTimelineUsecase(ctx context.Context, id string) ([]model.Tw
 			return nil, err
 		}
 	}
+	
 
 	// トランザクションをコミット
 	err = tx.Commit()
