@@ -288,6 +288,15 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 			Isblocked: isblocked,
 			Isprivate: isprivate,
 		}
+
+		//impressionをインクリメント
+		err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
 	}
 
 	// トランザクションをコミット
@@ -345,6 +354,15 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
 		return model.TweetParams{}, err
 	}
 	isprivate := !isfollowing && user.Isprivate
+
+	//impressionをインクリメント
+	err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return model.TweetParams{}, err
+	}
 
     // トランザクションをコミット
     err = tx.Commit()

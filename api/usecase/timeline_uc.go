@@ -67,6 +67,15 @@ func (u *Usecase) GetTimelineUsecase(ctx context.Context, id string) ([]model.Tw
 			Likes:     liked,
 			Retweets:  retweeted,
 		}
+
+		//impressionをインクリメント
+		err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
 	}
 
 	// トランザクションをコミット
