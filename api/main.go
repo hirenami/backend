@@ -27,11 +27,13 @@ func main() {
 	mysqlUser := os.Getenv("MYSQL_USER")
 	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
-	if mysqlUser == "" || mysqlUserPwd == "" || mysqlDatabase == "" {
+    mysqlHost := os.Getenv("MYSQL_HOST")
+    mysqlPort := os.Getenv("MYSQL_PORT")
+	if mysqlUser == "" || mysqlUserPwd == "" || mysqlDatabase == "" || mysqlHost == "" || mysqlPort == "" {
 		log.Fatal("fail :Getenv")
 	}
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@(localhost:3308)/%s?parseTime=true", mysqlUser, mysqlUserPwd, mysqlDatabase))
-
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", 
+        mysqlUser, mysqlUserPwd, mysqlHost, mysqlPort, mysqlDatabase))
 	if err != nil {
 		log.Fatalf("fail: sql.Open, %v\n", err)
 	}
