@@ -23,10 +23,10 @@ FROM debian:stable-slim as app
 WORKDIR /app  # アプリケーションを実行するディレクトリを変更
 
 # ビルド成果物をコピー
-COPY --from=build /main .
+COPY --from=build /main /app/
 
 # 必要なポートを公開
 EXPOSE 8080
 
 # アプリケーションを実行
-CMD ["/main"]
+CMD ["/app/main"]
