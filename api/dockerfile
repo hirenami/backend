@@ -5,8 +5,8 @@ FROM golang:1.22.2 as build
 WORKDIR /api
 
 # 依存関係ファイルを追加
-ADD go.mod ./
-ADD go.sum ./
+COPY go.mod ./
+COPY go.sum ./
 
 # 依存関係をダウンロード
 RUN go mod download
