@@ -17,10 +17,13 @@ COPY . ./
 # アプリケーションをビルド
 RUN go build -o /main ./main.go
 
+# .env ファイルを含む場合
+COPY .env ./
+
 # 実行ステージ
 FROM debian:stable-slim as app
 
-WORKDIR /app  # アプリケーションを実行するディレクトリを変更
+WORKDIR /app 
 
 # ビルド成果物をコピー
 COPY --from=build /main /app/
