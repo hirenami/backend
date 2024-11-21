@@ -3,7 +3,6 @@ module api
 go 1.22.2
 
 require (
-	cloud.google.com/go/cloudsqlconn v1.13.1
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gorilla/mux v1.8.1
