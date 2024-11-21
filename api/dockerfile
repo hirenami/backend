@@ -2,7 +2,7 @@
 FROM golang:1.22.2 as build
 
 # 作業ディレクトリを設定
-WORKDIR /backend/api  # ここはプロジェクトのルートディレクトリに合わせて変更
+WORKDIR /backend/api
 
 # 依存関係ファイルを追加
 COPY go.mod ./
