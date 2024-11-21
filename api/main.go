@@ -39,7 +39,7 @@ func main() {
 	defer dialer.Close()
 
 	// MySQL用のDSNを作成
-	dsn := fmt.Sprintf("%s:%s@cloudsql(%s)/%s?parseTime=true",
+	dsn := fmt.Sprintf("%s:%s@unix(/cloudsql/%s)/%s?parseTime=true",
 		mysqlUser, mysqlUserPwd, mysqlHost, mysqlDatabase)
 
 	// データベース接続
