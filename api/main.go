@@ -9,11 +9,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"context"
 	//"os"
 	_ "github.com/go-sql-driver/mysql"
 	//"github.com/joho/godotenv"
-	"cloud.google.com/go/cloudsqlconn"
 )
 
 // func envload() {
@@ -30,13 +28,6 @@ func main() {
 	mysqlUserPwd := "fnkpVJP9"
 	mysqlDatabase := "hackathon"
     mysqlHost := "term6-namito-hirezaki:us-central1:uttc"
-
-	// Cloud SQL Auth Proxyの設定
-	dialer, err := cloudsqlconn.NewDialer(context.Background())
-	if err != nil {
-		log.Fatalf("Could not create new dialer: %v", err)
-	}
-	defer dialer.Close()
 
 	// MySQL用のDSNを作成
 	dsn := fmt.Sprintf("%s:%s@unix(/cloudsql/%s)/%s?parseTime=true",
