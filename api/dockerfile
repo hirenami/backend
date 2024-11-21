@@ -2,7 +2,7 @@
 FROM golang:1.22.2 as build
 
 # 作業ディレクトリを設定
-WORKDIR /backend/api
+WORKDIR /backend/api  # 作業ディレクトリはプロジェクトのルートに合わせて
 
 # 依存関係ファイルを追加
 COPY go.mod ./
@@ -12,12 +12,21 @@ COPY go.sum ./
 RUN go mod download
 
 # アプリケーションソースコードを追加
-COPY . ./ 
+COPY . ./
 
 # アプリケーションをビルド
-RUN go build -o main ./main.go
+RUN go build -o /main ./main.go
 
+# 実行ステージ
+FROM debian:stable-slim as app
+
+WORKDIR /app  # アプリケーションを実行するディレクトリを変更
+
+# ビルド成果物をコピー
+COPY --from=build /main .
+
+# 必要なポートを公開
 EXPOSE 8080
 
 # アプリケーションを実行
-CMD ["backend/api/main"]
+CMD ["/main"]
