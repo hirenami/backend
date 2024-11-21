@@ -10,26 +10,26 @@ import (
 	"log"
 	"net/http"
 	"context"
-	"os"
+	//"os"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 	"cloud.google.com/go/cloudsqlconn"
 )
 
-func envload() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+// func envload() {
+// 	err := godotenv.Load(".env")
+// 	if err != nil {
+// 		log.Fatal("Error loading .env file")
+// 	}
 
-}
+// }
 
 func main() {
-	envload()
-	mysqlUser := os.Getenv("MYSQL_USER")
-	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
-	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
-    mysqlHost := os.Getenv("MYSQL_HOST")
+	//envload()
+	mysqlUser := "user"
+	mysqlUserPwd := "fnkpVJP9"
+	mysqlDatabase := "hackathon"
+    mysqlHost := "term6-namito-hirezaki:us-central1:uttc"
 
 	// Cloud SQL Auth Proxyの設定
 	dialer, err := cloudsqlconn.NewDialer(context.Background())

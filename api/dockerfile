@@ -17,9 +17,6 @@ COPY . ./
 # アプリケーションをビルド
 RUN go build -o /main ./main.go
 
-# .env ファイルを含む場合
-COPY .env ./
-
 # 実行ステージ
 FROM debian:stable-slim as app
 
