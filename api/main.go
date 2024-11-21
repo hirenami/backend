@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"context"
 	"os"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"cloud.google.com/go/cloudsqlconn"
 )
 
 func envload() {
@@ -28,15 +30,24 @@ func main() {
 	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
     mysqlHost := os.Getenv("MYSQL_HOST")
-    mysqlPort := os.Getenv("MYSQL_PORT")
-	if mysqlUser == "" || mysqlUserPwd == "" || mysqlDatabase == "" || mysqlHost == "" || mysqlPort == "" {
-		log.Fatal("fail :Getenv")
-	}
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", 
-        mysqlUser, mysqlUserPwd, mysqlHost, mysqlPort, mysqlDatabase))
+
+	// Cloud SQL Auth Proxyの設定
+	dialer, err := cloudsqlconn.NewDialer(context.Background())
 	if err != nil {
-		log.Fatalf("fail: sql.Open, %v\n", err)
+		log.Fatalf("Could not create new dialer: %v", err)
 	}
+	defer dialer.Close()
+
+	// MySQL用のDSNを作成
+	dsn := fmt.Sprintf("%s:%s@cloudsql(%s)/%s?parseTime=true",
+		mysqlUser, mysqlUserPwd, mysqlHost, mysqlDatabase)
+
+	// データベース接続
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatalf("Failed to open database: %v", err)
+	}
+
 	if err := db.Ping(); err != nil {
 		log.Fatalf("fail: db.Ping, %v\n", err)
 	}
