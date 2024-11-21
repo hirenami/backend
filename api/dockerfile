@@ -23,7 +23,7 @@ FROM debian:stable-slim as app
 WORKDIR /api
 
 # ビルド成果物をコピー
-COPY --from=build /backend/api/main .
+COPY --from=build /api/main .
 
 # 必要なポートを公開
 EXPOSE 8080
