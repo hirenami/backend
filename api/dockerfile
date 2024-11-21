@@ -17,16 +17,7 @@ COPY . ./
 # アプリケーションをビルド
 RUN go build -o main ./main.go
 
-# 実行ステージ
-FROM debian:stable-slim as app
-
-WORKDIR /api
-
-# ビルド成果物をコピー
-COPY --from=build /api/main .
-
-# 必要なポートを公開
 EXPOSE 8080
 
 # アプリケーションを実行
-CMD ["/api/main"]
+CMD ["backend/api/main"]
