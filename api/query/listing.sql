@@ -1,4 +1,4 @@
--- name: GetListing :many
+-- name: GetListing :one
 SELECT * from listing
 WHERE listingId = ?;
 
@@ -9,3 +9,7 @@ WHERE userId = ?;
 -- name: GetListingByTweet :one
 SELECT * from listing
 WHERE tweetId = ?;
+
+-- name: CreateListing :exec
+INSERT INTO listing (userId, tweetId, listingname, listingdescription, listingprice, type, stock)
+VALUES (?, ?, ?, ?, ?, ?, ?);

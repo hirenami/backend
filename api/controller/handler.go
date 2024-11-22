@@ -32,6 +32,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/user/edit", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdateProfileCtrl))).Methods("PUT","OPTIONS")
 	r.Handle("/user/delete", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteAccountCtrl))).Methods("PATCH","OPTIONS")
 	r.Handle("/user/private", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.ChangePrivacyCtrl))).Methods("PUT","OPTIONS")
+	r.Handle("/premium", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdatePremiumCtrl))).Methods("PATCH","OPTIONS")
 
 	r.Handle("/reply/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateReplyCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/reply/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetReplyCtrl))).Methods("GET","OPTIONS")
@@ -46,7 +47,12 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/search/{keyword}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.SearchByKeywordCtrl))).Methods("GET","OPTIONS")
 
-	r.Handle("/premium", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdatePremiumCtrl))).Methods("PATCH","OPTIONS")
+	r.Handle("/listing/{listingId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetListing))).Methods("GET","OPTIONS")
+	r.Handle("/listing/{tweetId}/tweetid", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetListingByTweet))).Methods("GET","OPTIONS")
+	r.Handle("/listing/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetUserListings))).Methods("GET","OPTIONS")
+	r.Handle("/listing", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateListing))).Methods("POST","OPTIONS")
+
+	
 
 	r.Handle("/dm", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateDm))).Methods("GET","OPTIONS")
 

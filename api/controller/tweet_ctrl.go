@@ -176,7 +176,6 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonData)
-	log.Default().Println("User Userid: ", userId)
 }
 
 // GET /tweet

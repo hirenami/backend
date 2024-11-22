@@ -65,3 +65,21 @@ type Conversation struct {
 	User sqlc.User    // ユーザー情報
 	Dms  []sqlc.Dm    // DM一覧
 }
+
+type ListingParams struct {
+	Listing  sqlc.Listing `json:"listing"`
+	User     sqlc.User    `json:"user"`
+	Tweet    sqlc.Tweet   `json:"tweet"`
+}
+
+type Listing struct {
+	Listingid        int32     `json:"listingid"`
+	Userid           string    `json:"userid"`
+	Tweetid          int32     `json:"tweetid"`
+	CreatedAt        time.Time `json:"created_at"`
+	Listingname      string    `json:"listingname"`
+	Listingdescription string    `json:"listingdescription"`
+	Listingprice     int32     `json:"listingprice"`
+	Type             string    `json:"type"`
+	Stock            int32     `json:"stock"`
+}
