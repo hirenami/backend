@@ -160,3 +160,15 @@ func (d *Dao) GetTweetId(ctx context.Context, tx *sql.Tx, userId string, retweet
 
 	return txQueries.GetTweetId(ctx, arg)
 }
+
+func (d *Dao) UpdateReview (ctx context.Context, tx *sql.Tx, tweetId int32, review int32) error {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	args := sqlc.UpdateReviewParams{
+		Tweetid: tweetId,
+		Review: review,
+	}
+
+	return txQueries.UpdateReview(ctx, args)
+}

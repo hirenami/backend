@@ -352,3 +352,19 @@ func (q *Queries) PlusRetweet(ctx context.Context, tweetid int32) error {
 	_, err := q.db.ExecContext(ctx, plusRetweet, tweetid)
 	return err
 }
+
+const updateReview = `-- name: UpdateReview :exec
+UPDATE tweets
+SET review = ?
+WHERE tweetId = ?
+`
+
+type UpdateReviewParams struct {
+	Review  int32 `json:"review"`
+	Tweetid int32 `json:"tweetid"`
+}
+
+func (q *Queries) UpdateReview(ctx context.Context, arg UpdateReviewParams) error {
+	_, err := q.db.ExecContext(ctx, updateReview, arg.Review, arg.Tweetid)
+	return err
+}

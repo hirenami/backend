@@ -82,4 +82,5 @@ type Listing struct {
 	Listingprice     int32     `json:"listingprice"`
 	Type             string    `json:"type"`
 	Stock            int32     `json:"stock"`
+	Condition        string    `json:"condition"`
 }

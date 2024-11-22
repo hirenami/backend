@@ -84,3 +84,8 @@ SELECT EXISTS (
 -- name: GetTweetId :one
 SELECT tweetId FROM tweets
 WHERE retweetId = ? and userId = ? and isDeleted = false and isQuote = false;
+
+-- name: UpdateReview :exec
+UPDATE tweets
+SET review = ?
+WHERE tweetId = ?;

@@ -10,8 +10,8 @@ import (
 )
 
 const createListing = `-- name: CreateListing :exec
-INSERT INTO listing (userId, tweetId, listingname, listingdescription, listingprice, type, stock)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO listing (userId, tweetId, listingname, listingdescription, listingprice, type, stock, ` + "`" + `condition` + "`" + `)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateListingParams struct {
@@ -22,6 +22,7 @@ type CreateListingParams struct {
 	Listingprice       int32  `json:"listingprice"`
 	Type               string `json:"type"`
 	Stock              int32  `json:"stock"`
+	Condition          string `json:"condition"`
 }
 
 func (q *Queries) CreateListing(ctx context.Context, arg CreateListingParams) error {
@@ -33,12 +34,13 @@ func (q *Queries) CreateListing(ctx context.Context, arg CreateListingParams) er
 		arg.Listingprice,
 		arg.Type,
 		arg.Stock,
+		arg.Condition,
 	)
 	return err
 }
 
 const getListing = `-- name: GetListing :one
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, type, stock from listing
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE listingId = ?
 `
 
@@ -52,6 +54,7 @@ func (q *Queries) GetListing(ctx context.Context, listingid int32) (Listing, err
 		&i.CreatedAt,
 		&i.Listingname,
 		&i.Listingdescription,
+		&i.Condition,
 		&i.Listingprice,
 		&i.Type,
 		&i.Stock,
@@ -60,7 +63,7 @@ func (q *Queries) GetListing(ctx context.Context, listingid int32) (Listing, err
 }
 
 const getListingByTweet = `-- name: GetListingByTweet :one
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, type, stock from listing
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE tweetId = ?
 `
 
@@ -74,6 +77,7 @@ func (q *Queries) GetListingByTweet(ctx context.Context, tweetid int32) (Listing
 		&i.CreatedAt,
 		&i.Listingname,
 		&i.Listingdescription,
+		&i.Condition,
 		&i.Listingprice,
 		&i.Type,
 		&i.Stock,
@@ -82,7 +86,7 @@ func (q *Queries) GetListingByTweet(ctx context.Context, tweetid int32) (Listing
 }
 
 const getUserListings = `-- name: GetUserListings :many
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, type, stock from listing
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE userId = ?
 `
 
@@ -102,6 +106,7 @@ func (q *Queries) GetUserListings(ctx context.Context, userid string) ([]Listing
 			&i.CreatedAt,
 			&i.Listingname,
 			&i.Listingdescription,
+			&i.Condition,
 			&i.Listingprice,
 			&i.Type,
 			&i.Stock,

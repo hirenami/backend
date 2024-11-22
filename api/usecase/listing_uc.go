@@ -5,18 +5,39 @@ import (
 	"api/model"
 )
 
-func (u* Usecase) CreateListingUsecase(ctx context.Context, listing model.Listing) error {
+func (u* Usecase) CreateListingUsecase(ctx context.Context, userId string,content string , media_url string, listing model.Listing) error {
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return err
 	}
 
-	err = u.dao.CreateListing(ctx, tx, listing.Userid, listing.Tweetid, listing.Listingname, listing.Listingdescription, listing.Listingprice, listing.Type, listing.Stock)
+	err = u.dao.CreateTweet(ctx, tx,userId, content, media_url)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return err
+		}
+	}
+
+	tweetId , err := u.dao.GetLastInsertID(ctx, tx)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return err
+		}
+	}
+
+	err = u.dao.CreateListing(ctx, tx, userId, int32(tweetId), listing.Listingname, listing.Listingdescription, listing.Listingprice, listing.Type, listing.Stock, listing.Condition)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
 		return err
+	}
+
+	err = u.dao.UpdateReview(ctx, tx, int32(tweetId),-1)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {

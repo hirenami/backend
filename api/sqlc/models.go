@@ -185,6 +185,7 @@ type Listing struct {
 	CreatedAt          time.Time `json:"created_at"`
 	Listingname        string    `json:"listingname"`
 	Listingdescription string    `json:"listingdescription"`
+	Condition          string    `json:"condition"`
 	Listingprice       int32     `json:"listingprice"`
 	Type               string    `json:"type"`
 	Stock              int32     `json:"stock"`

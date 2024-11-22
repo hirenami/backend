@@ -82,13 +82,25 @@ func (c *Controller) CreateListing(w http.ResponseWriter, r *http.Request) {
 
 	setCORSHeaders(w)
 
-	var listing model.Listing
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type CreateListing struct {
+		Listing model.Listing `json:"listing"`
+		Content string `json:"content"`
+		Media_url string `json:"media_url"`
+	}
+	var listing CreateListing
 	if err := json.NewDecoder(r.Body).Decode(&listing); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	ctx := context.Background()
-	err := c.Usecase.CreateListingUsecase(ctx, listing)
+	err = c.Usecase.CreateListingUsecase(ctx, userId,listing.Content, listing.Media_url, listing.Listing)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

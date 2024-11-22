@@ -20,7 +20,7 @@ func (d *Dao) GetListingByTweet(ctx context.Context,tx *sql.Tx, tweetid int32) (
 	return txQueries.GetListingByTweet(ctx, tweetid)
 }
 
-func (d *Dao) CreateListing(ctx context.Context,tx *sql.Tx, userid string, tweetid int32, listingname string, listingdescription string, listingprice int32, Type string,stock int32) error {
+func (d *Dao) CreateListing(ctx context.Context,tx *sql.Tx, userid string, tweetid int32, listingname string, listingdescription string, listingprice int32, Type string,stock int32,condition string) error {
 	
 	txQueries := d.WithTx(tx)
 
@@ -32,6 +32,7 @@ func (d *Dao) CreateListing(ctx context.Context,tx *sql.Tx, userid string, tweet
 		Listingprice: listingprice,
 		Type: Type,
 		Stock: stock,
+		Condition: condition,
 	})
 }
 
