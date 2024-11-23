@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/gorilla/mux"
+	"api/model"
 )
 
 // POST /retweet/{tweetId}
@@ -66,7 +67,7 @@ func (c *Controller) CreateQuoteCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	var req Tweet
+	var req model.Tweet
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

@@ -33,6 +33,7 @@ type Tweet struct {
 	Likes       int32     `json:"likes"`
 	Retweets    int32     `json:"retweets"`
 	Replies     int32     `json:"replies"`
+	Review      int32     `json:"review"`
 	Impressions int32     `json:"impressions"`
 	Isdeleted   bool      `json:"isdeleted"`
 }
@@ -46,9 +47,16 @@ type User struct {
 	IconImage   string    `json:"icon_image"`
 	Biography   string    `json:"biography"`
 	Isprivate   bool      `json:"isprivate"`
-	Isfrozen    bool      `json:"isfrozen"`
+	Ispremium   bool      `json:"ispremium"`
 	Isdeleted   bool      `json:"isdeleted"`
 	Isadmin     bool      `json:"isadmin"`
+}
+
+type UpdateProfile struct {
+	Username    string `json:"username"`
+	HeaderImage string `json:"header_image"`
+	IconImage   string `json:"icon_image"`
+	Biography   string `json:"biography"`
 }
 
 type Profile struct {

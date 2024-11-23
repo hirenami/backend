@@ -41,3 +41,71 @@ func (c *Controller) SearchByKeywordCtrl(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(tweets)
 
 }
+
+// GET /serach/{keyword}/user
+func (c *Controller) SearchByUserCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	keyword := mux.Vars(r)["keyword"]
+
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	users, err := c.Usecase.SearchByUserUsecase(ctx,Id, keyword)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+
+}
+
+// GET /serach/{keyword}/tag
+func (c *Controller) SearchByHashtagCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	keyword := mux.Vars(r)["keyword"]
+
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tweets, err := c.Usecase.SearchByHashtagUsecase(ctx,Id, keyword)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(tweets)
+
+}

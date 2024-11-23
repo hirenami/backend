@@ -1,8 +1,8 @@
 -- name: CreateReply :exec
 INSERT INTO tweets (
-	userId, isReply, content, media_url
+	userId, isReply, content, media_url, review
 ) VALUES (
-	?, true, ?, ?
+	?, true, ?, ?, ?
 );
 
 -- name: GetLastInsertID :one

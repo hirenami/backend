@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"api/model"
 )
 
 // POST /user/create
@@ -17,7 +18,7 @@ func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	setCORSHeaders(w)
 
-	req := User{}
+	req := model.User{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -62,7 +63,7 @@ func (c *Controller) UpdateProfileCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("User Userid: ", userId)
 
-	req := User{}
+	req := model.User{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return

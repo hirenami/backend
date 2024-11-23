@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"api/model"
 )
 
 // POST /tweet
@@ -19,7 +20,7 @@ func (c *Controller) CreateTweetTweetCtrl(w http.ResponseWriter, r *http.Request
 
 	setCORSHeaders(w)
 
-	req := Tweet{}
+	req := model.Tweet{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -58,7 +59,7 @@ func (c *Controller) UpdateTweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 	setCORSHeaders(w)
 
-	req := Tweet{}
+	req := model.Tweet{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return

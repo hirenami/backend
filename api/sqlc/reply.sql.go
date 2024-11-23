@@ -23,9 +23,9 @@ func (q *Queries) CountReplies(ctx context.Context, tweetid int32) (int32, error
 
 const createReply = `-- name: CreateReply :exec
 INSERT INTO tweets (
-	userId, isReply, content, media_url
+	userId, isReply, content, media_url, review
 ) VALUES (
-	?, true, ?, ?
+	?, true, ?, ?, ?
 )
 `
 
@@ -33,10 +33,16 @@ type CreateReplyParams struct {
 	Userid   string `json:"userid"`
 	Content  string `json:"content"`
 	MediaUrl string `json:"media_url"`
+	Review   int32  `json:"review"`
 }
 
 func (q *Queries) CreateReply(ctx context.Context, arg CreateReplyParams) error {
-	_, err := q.db.ExecContext(ctx, createReply, arg.Userid, arg.Content, arg.MediaUrl)
+	_, err := q.db.ExecContext(ctx, createReply,
+		arg.Userid,
+		arg.Content,
+		arg.MediaUrl,
+		arg.Review,
+	)
 	return err
 }
 

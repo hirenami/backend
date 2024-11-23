@@ -9,7 +9,7 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media_url string, tweetId int32) error {
+func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media_url string,review, tweetId int32) error {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -35,7 +35,7 @@ func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media
 	}
 
 	//Daoのメソッドを呼び出し
-	err = u.dao.CreateReply(ctx, tx, userId, content, media_url)
+	err = u.dao.CreateReply(ctx, tx, userId, content, media_url, review)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {

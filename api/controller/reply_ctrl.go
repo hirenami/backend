@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/gorilla/mux"
+	"api/model"
 )
 
 // POST /reply/{tweetId}
@@ -33,7 +34,7 @@ func (c *Controller) CreateReplyCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	var req Tweet
+	var req model.Tweet
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -41,8 +42,9 @@ func (c *Controller) CreateReplyCtrl(w http.ResponseWriter, r *http.Request) {
 
 	content := req.Content
 	media_url := req.MediaUrl
+	review := req.Review
 
-	err = c.Usecase.CreateReplyUsecase(ctx, userId, content, media_url,int32(TweetId))
+	err = c.Usecase.CreateReplyUsecase(ctx, userId, content, media_url,review,int32(TweetId))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
