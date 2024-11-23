@@ -80,6 +80,13 @@ type ListingParams struct {
 	Tweet    sqlc.Tweet   `json:"tweet"`
 }
 
+type PurchaseParams struct {
+	Purchase sqlc.Purchase `json:"purchase"`
+	Listing  sqlc.Listing  `json:"listing"`
+	User     sqlc.User     `json:"user"`
+	Tweet	sqlc.Tweet    `json:"tweet"`
+}
+
 type Listing struct {
 	Listingid        int32     `json:"listingid"`
 	Userid           string    `json:"userid"`
@@ -91,4 +98,12 @@ type Listing struct {
 	Type             string    `json:"type"`
 	Stock            int32     `json:"stock"`
 	Condition        string    `json:"condition"`
+}
+
+type Purchase struct {
+	Purchaseid int32     `json:"purchaseid"`
+	Userid     string    `json:"userid"`
+	Listingid  int32     `json:"listingid"`
+	CreatedAt  time.Time `json:"created_at"`
+	Status     string    `json:"status"`
 }

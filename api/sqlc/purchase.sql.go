@@ -9,6 +9,21 @@ import (
 	"context"
 )
 
+const createPurchase = `-- name: CreatePurchase :exec
+INSERT INTO purchase (userId, listingId)
+VALUES (?, ?)
+`
+
+type CreatePurchaseParams struct {
+	Userid    string `json:"userid"`
+	Listingid int32  `json:"listingid"`
+}
+
+func (q *Queries) CreatePurchase(ctx context.Context, arg CreatePurchaseParams) error {
+	_, err := q.db.ExecContext(ctx, createPurchase, arg.Userid, arg.Listingid)
+	return err
+}
+
 const getPurchase = `-- name: GetPurchase :one
 SELECT purchaseid, userid, listingid, created_at, status from purchase
 WHERE purchaseId = ?

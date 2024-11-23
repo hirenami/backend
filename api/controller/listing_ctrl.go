@@ -133,3 +133,32 @@ func (c *Controller) GetUserListings(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(jsonData)
 }
+
+func (c *Controller) GetMyListingCtrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	setCORSHeaders(w)
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	listings, err := c.Usecase.GetUserListingsUsecase(ctx, userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	jsonData, err := json.Marshal(listings)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
+}
