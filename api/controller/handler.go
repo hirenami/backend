@@ -40,7 +40,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateLikeCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteLikeCtrl))).Methods("DELETE","OPTIONS")
-	r.Handle("/like/{tweetId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.IsLikedCtrl))).Methods("GET","OPTIONS")
+	r.Handle("/like/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetUserslikeCtrl))).Methods("GET","OPTIONS")
 
 	r.Handle("/notifications", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetNotificationsCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/notifications/{notificationId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.UpdateNotificationStatusCtrl))).Methods("PUT","OPTIONS")
@@ -51,7 +51,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/listing/{listingId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetListing))).Methods("GET","OPTIONS")
 	r.Handle("/listing/{tweetId}/tweetid", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetListingByTweet))).Methods("GET","OPTIONS")
-	r.Handle("/listing/{userId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetUserListings))).Methods("GET","OPTIONS")
+	r.Handle("/listing/{userId}/userid", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetUserListings))).Methods("GET","OPTIONS")
 	r.Handle("/listing", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateListing))).Methods("POST","OPTIONS")
 	r.Handle("/listing", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetMyListingCtrl))).Methods("GET","OPTIONS")
 

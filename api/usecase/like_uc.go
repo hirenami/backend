@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"api/model"
 	"api/sqlc"
 	"context"
 	"errors"
@@ -185,7 +186,7 @@ func (u *Usecase) CheckLikeUsecase(ctx context.Context, tweetId int32) ([]sqlc.U
 	return users, nil
 }
 
-func (u *Usecase) GetUserslikeUsecase(ctx context.Context, userId string) ([]sqlc.Tweet, error) {
+func (u *Usecase) GetUserslikeUsecase(ctx context.Context, myId, userId string) ([]model.TweetParams, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -211,20 +212,77 @@ func (u *Usecase) GetUserslikeUsecase(ctx context.Context, userId string) ([]sql
 		return nil, err
 	}
 
-	// []Tweetを作成
-	var tweets []sqlc.Tweet
+	// 結果を格納するためのスライス
+	tweetParamsList := make([]model.TweetParams, len(tweetid))
 
-	// ツイートIDの配列を展開し、Tweet構造体を取得
-	for _, userId := range tweetid {
-		tweet, err := u.dao.GetTweet(ctx, tx, userId)
+	for i, tweet := range tweetid {
+		// ツイート情報を取得
+		tweet, err := u.dao.GetTweet(ctx, tx, tweet)
 		if err != nil {
-			// エラーが発生した場合、ロールバック
 			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 			}
 			return nil, err
 		}
-		tweets = append(tweets, tweet) // ポインタを解 dereferenceしてスライスに追加
+
+		// ユーザー情報を取得
+		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
+
+		// ツイートが「いいね」されているか確認
+		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
+
+		// ツイートがリツイートされているか確認
+		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
+
+		isblocked, err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		isfollowing, err := u.dao.IsFollowing(ctx, tx, tweet.Userid, myId)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		isprivate := !isfollowing && user.Isprivate
+
+		// TweetParams構造体にデータをまとめる
+		tweetParamsList[i] = model.TweetParams{
+			Tweet:     tweet,
+			User:      user,
+			Likes:     liked,
+			Retweets:  retweeted,
+			Isblocked: isblocked,
+			Isprivate: isprivate,
+		}
+
+		//impressionをインクリメント
+		err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return nil, err
+		}
 	}
 
 	// トランザクションをコミット
@@ -233,51 +291,5 @@ func (u *Usecase) GetUserslikeUsecase(ctx context.Context, userId string) ([]sql
 		return nil, err
 	}
 
-	return tweets, nil
-}
-
-func (u *Usecase) IsLikedUsecase(ctx context.Context, userId string, tweetId int32) (bool, error) {
-	// トランザクションを開始
-	tx, err := u.dao.Begin()
-	if err != nil {
-		return false, err
-	}
-
-	if bool, err := u.dao.IsTweetExists(ctx, tx, tweetId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return false, err
-	} else if !bool {
-		return false, errors.New("tweet does not exist")
-	}
-
-	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return false, err
-	} else if !bool {
-		return false, errors.New("user does not exist")
-	}
-
-	// daoのメソッドにトランザクションを渡して実行
-	bool, err := u.dao.IsLiked(ctx, tx, userId, tweetId)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-		}
-		return false, err
-	}
-
-	// トランザクションをコミット
-	err = tx.Commit()
-	if err != nil {
-		return false, err
-	}
-
-	return bool, nil
+	return tweetParamsList, nil
 }

@@ -83,8 +83,12 @@ func (q *Queries) GetLikes(ctx context.Context, tweetid int32) (int32, error) {
 }
 
 const getUsersLikes = `-- name: GetUsersLikes :many
-SELECT tweetId FROM likes
-WHERE userId = ?
+SELECT l.tweetId
+FROM likes l
+JOIN tweets t ON l.tweetId = t.tweetId
+WHERE l.userId = ? -- likesテーブルのuserIdを明示
+  AND t.isDeleted = false
+ORDER BY l.createdAt DESC
 `
 
 func (q *Queries) GetUsersLikes(ctx context.Context, userid string) ([]int32, error) {

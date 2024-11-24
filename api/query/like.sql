@@ -28,8 +28,12 @@ SELECT userId FROM likes
 WHERE tweetId = ?;
 
 -- name: GetUsersLikes :many
-SELECT tweetId FROM likes
-WHERE userId = ?;
+SELECT l.tweetId
+FROM likes l
+JOIN tweets t ON l.tweetId = t.tweetId
+WHERE l.userId = ? -- likesテーブルのuserIdを明示
+  AND t.isDeleted = false
+ORDER BY l.createdAt DESC;
 
 -- name: IsLiked :one
 SELECT EXISTS (
