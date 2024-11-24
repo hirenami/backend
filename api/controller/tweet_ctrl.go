@@ -78,7 +78,6 @@ func (c *Controller) UpdateTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	log.Printf("Vars: %v\n", vars) // デバッグ用に出
 	tweetId := vars["tweetId"]
 	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
 	if err != nil {
@@ -120,7 +119,6 @@ func (c *Controller) DeleteTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	log.Printf("Vars: %v\n", vars) // デバッグ用に出
 	tweetId := vars["tweetId"]
 	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
 	if err != nil {
@@ -148,7 +146,6 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	setCORSHeaders(w)
 
 	vars := mux.Vars(r)
-	log.Printf("Vars: %v\n", vars) // デバッグ用に出
 	userId := vars["userId"]
 
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
@@ -190,7 +187,6 @@ func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
 	setCORSHeaders(w)
 
 	vars := mux.Vars(r)
-	log.Printf("Vars: %v\n", vars) // デバッグ用に出
 	tweetId := vars["tweetId"]
 	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
 	if err != nil {

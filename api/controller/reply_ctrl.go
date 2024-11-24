@@ -140,3 +140,35 @@ func (c *Controller) GetTweetRepliedToCtrl(w http.ResponseWriter, r *http.Reques
 	}
 	w.Write(jsonData)
 }
+
+func (c *Controller) GetUsersReplyCtrl (w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	Id,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := mux.Vars(r)["userId"]
+	replies, err := c.Usecase.GetUsersReplyUsecase(ctx,userId,Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	jsonData, err := json.Marshal(replies)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
+}

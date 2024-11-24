@@ -99,7 +99,7 @@ func (q *Queries) GetTweetRepliedTo(ctx context.Context, replyid int32) (int32, 
 
 const getUsersReplies = `-- name: GetUsersReplies :many
 SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets 
-WHERE userId = ? and isReply = true ORDER BY createdAt DESC
+WHERE userId = ? and isReply = true ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUsersReplies(ctx context.Context, userid string) ([]Tweet, error) {
