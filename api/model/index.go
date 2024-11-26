@@ -88,7 +88,7 @@ type PurchaseParams struct {
 }
 
 type Listing struct {
-	Listingid        int32     `json:"listingid"`
+	Listingid        int64     `json:"listingid"`
 	Userid           string    `json:"userid"`
 	Tweetid          int32     `json:"tweetid"`
 	CreatedAt        time.Time `json:"created_at"`

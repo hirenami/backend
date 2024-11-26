@@ -108,7 +108,7 @@ func (c *Controller) CreatePurchaseCtrl(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var listingId int32
+	var listingId int64
 	err = json.NewDecoder(r.Body).Decode(&listingId)
 	if err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)

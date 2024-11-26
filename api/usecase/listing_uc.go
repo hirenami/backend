@@ -5,7 +5,7 @@ import (
 	"api/model"
 )
 
-func (u* Usecase) CreateListingUsecase(ctx context.Context, userId string,content string , media_url string, listing model.Listing) error {
+func (u* Usecase) CreateListingUsecase(ctx context.Context,listingId int64, userId string,content string , media_url string, listing model.Listing) error {
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (u* Usecase) CreateListingUsecase(ctx context.Context, userId string,conten
 		}
 	}
 
-	err = u.dao.CreateListing(ctx, tx, userId, int32(tweetId), listing.Listingname, listing.Listingdescription, listing.Listingprice, listing.Type, listing.Stock, listing.Condition)
+	err = u.dao.CreateListing(ctx, tx, listingId, userId, int32(tweetId), listing.Listingname, listing.Listingdescription, listing.Listingprice, listing.Type, listing.Stock, listing.Condition)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
@@ -47,7 +47,7 @@ func (u* Usecase) CreateListingUsecase(ctx context.Context, userId string,conten
 	return nil
 }
 
-func (u* Usecase) GetListingUsecase(ctx context.Context, listingid int32) (model.ListingParams, error) {
+func (u* Usecase) GetListingUsecase(ctx context.Context, listingid int64) (model.ListingParams, error) {
 	tx , err := u.dao.Begin()
 	if err != nil {
 		return model.ListingParams{}, err

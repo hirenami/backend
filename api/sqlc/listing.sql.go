@@ -10,11 +10,12 @@ import (
 )
 
 const createListing = `-- name: CreateListing :exec
-INSERT INTO listing (userId, tweetId, listingname, listingdescription, listingprice, type, stock, ` + "`" + `condition` + "`" + `)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO listing (listingId, userId, tweetId, listingname, listingdescription, listingprice, type, stock, ` + "`" + `condition` + "`" + `)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateListingParams struct {
+	Listingid          int64  `json:"listingid"`
 	Userid             string `json:"userid"`
 	Tweetid            int32  `json:"tweetid"`
 	Listingname        string `json:"listingname"`
@@ -27,6 +28,7 @@ type CreateListingParams struct {
 
 func (q *Queries) CreateListing(ctx context.Context, arg CreateListingParams) error {
 	_, err := q.db.ExecContext(ctx, createListing,
+		arg.Listingid,
 		arg.Userid,
 		arg.Tweetid,
 		arg.Listingname,
@@ -44,7 +46,7 @@ SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, 
 WHERE listingId = ?
 `
 
-func (q *Queries) GetListing(ctx context.Context, listingid int32) (Listing, error) {
+func (q *Queries) GetListing(ctx context.Context, listingid int64) (Listing, error) {
 	row := q.db.QueryRowContext(ctx, getListing, listingid)
 	var i Listing
 	err := row.Scan(

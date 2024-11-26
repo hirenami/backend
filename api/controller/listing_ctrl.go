@@ -26,7 +26,7 @@ func (c *Controller) GetListing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := context.Background()
-	listing, err := c.Usecase.GetListingUsecase(ctx, int32(ListingId))
+	listing, err := c.Usecase.GetListingUsecase(ctx, int64(ListingId))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -100,7 +100,7 @@ func (c *Controller) CreateListing(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = c.Usecase.CreateListingUsecase(ctx, userId,listing.Content, listing.Media_url, listing.Listing)
+	err = c.Usecase.CreateListingUsecase(ctx, int64(listing.Listing.Listingid), userId,listing.Content, listing.Media_url, listing.Listing)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

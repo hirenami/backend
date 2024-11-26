@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func (d *Dao) GetListing(ctx context.Context,tx *sql.Tx, listingid int32) (sqlc.Listing, error) {
+func (d *Dao) GetListing(ctx context.Context,tx *sql.Tx, listingid int64) (sqlc.Listing, error) {
 	
 	txQueries := d.WithTx(tx)
 
@@ -20,11 +20,12 @@ func (d *Dao) GetListingByTweet(ctx context.Context,tx *sql.Tx, tweetid int32) (
 	return txQueries.GetListingByTweet(ctx, tweetid)
 }
 
-func (d *Dao) CreateListing(ctx context.Context,tx *sql.Tx, userid string, tweetid int32, listingname string, listingdescription string, listingprice int32, Type string,stock int32,condition string) error {
+func (d *Dao) CreateListing(ctx context.Context,tx *sql.Tx,listingid int64, userid string, tweetid int32, listingname string, listingdescription string, listingprice int32, Type string,stock int32,condition string) error {
 	
 	txQueries := d.WithTx(tx)
 
 	return txQueries.CreateListing(ctx, sqlc.CreateListingParams{
+		Listingid: listingid,
 		Userid: userid,
 		Tweetid: tweetid,
 		Listingname: listingname,

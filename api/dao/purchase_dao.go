@@ -20,7 +20,7 @@ func (d *Dao) GetPurchasesByUser (ctx context.Context,tx *sql.Tx, userId string)
 	return txqueries.GetUserPurchases(ctx,userId)
 }
 
-func (d *Dao) CreatePurchase (ctx context.Context,tx *sql.Tx, userId string, listingId int32) error {
+func (d *Dao) CreatePurchase (ctx context.Context,tx *sql.Tx, userId string, listingId int64) error {
 	
 	txqueries := d.WithTx(tx)
 

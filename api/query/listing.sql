@@ -11,5 +11,5 @@ SELECT * from listing
 WHERE tweetId = ?;
 
 -- name: CreateListing :exec
-INSERT INTO listing (userId, tweetId, listingname, listingdescription, listingprice, type, stock, `condition`)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO listing (listingId, userId, tweetId, listingname, listingdescription, listingprice, type, stock, `condition`)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);

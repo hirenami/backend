@@ -16,7 +16,7 @@ VALUES (?, ?)
 
 type CreatePurchaseParams struct {
 	Userid    string `json:"userid"`
-	Listingid int32  `json:"listingid"`
+	Listingid int64  `json:"listingid"`
 }
 
 func (q *Queries) CreatePurchase(ctx context.Context, arg CreatePurchaseParams) error {

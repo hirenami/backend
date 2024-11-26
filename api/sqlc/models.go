@@ -179,7 +179,7 @@ type Like struct {
 }
 
 type Listing struct {
-	Listingid          int32     `json:"listingid"`
+	Listingid          int64     `json:"listingid"`
 	Userid             string    `json:"userid"`
 	Tweetid            int32     `json:"tweetid"`
 	CreatedAt          time.Time `json:"created_at"`
@@ -204,7 +204,7 @@ type Notification struct {
 type Purchase struct {
 	Purchaseid int32          `json:"purchaseid"`
 	Userid     string         `json:"userid"`
-	Listingid  int32          `json:"listingid"`
+	Listingid  int64          `json:"listingid"`
 	CreatedAt  time.Time      `json:"created_at"`
 	Status     PurchaseStatus `json:"status"`
 }

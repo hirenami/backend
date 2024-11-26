@@ -104,7 +104,7 @@ func (u *Usecase) GetPurchasesByUserUsecase(ctx context.Context, userId string) 
 	return purchaseParams, nil
 }
 
-func (u *Usecase) CreatePurchaseUsecase(ctx context.Context, userId string, listingId int32) error {
+func (u *Usecase) CreatePurchaseUsecase(ctx context.Context, userId string, listingId int64) error {
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return err
