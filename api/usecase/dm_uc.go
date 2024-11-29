@@ -109,7 +109,7 @@ func (u *Usecase) DeleteDm(ctx context.Context, dmsid int32) error {
 	return err
 }
 
-func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.Conversation, error) {
+func (u *Usecase) GetAllDms(ctx context.Context, myId string) ([]model.Conversation, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -131,7 +131,7 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 	}
 
 	// 他ユーザーごとにメッセージを整理
-	conversations := make(map[string]model.Conversation)
+	conversationMap := make(map[string]model.Conversation)
 	for _, dm := range dms {
 		// 自分以外のユーザー ID を特定
 		partnerId := dm.Senderid
@@ -139,13 +139,14 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 			partnerId = dm.Receiverid
 		}
 
+		// ユーザー情報を取得
 		user, err := u.dao.GetProfile(ctx, tx, partnerId)
 		if err != nil {
 			return nil, err
 		}
 
 		// 既存のデータを取得、なければ新規作成
-		conv, exists := conversations[partnerId]
+		conv, exists := conversationMap[partnerId]
 		if !exists {
 			conv = model.Conversation{
 				User: user,
@@ -155,13 +156,18 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 
 		// DM を追加
 		conv.Dms = append(conv.Dms, dm)
-		conversations[partnerId] = conv
-		
+		conversationMap[partnerId] = conv
 	}
 
 	// トランザクションをコミット
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	// マップからスライスに変換
+	var conversations []model.Conversation
+	for _, conv := range conversationMap {
+		conversations = append(conversations, conv)
 	}
 
 	return conversations, nil

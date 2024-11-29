@@ -59,7 +59,6 @@ FROM dms
 WHERE
     senderId = ?
     OR receiverId = ?
-ORDER BY createdAt DESC
 `
 
 type GetAllDmsParams struct {
@@ -128,7 +127,6 @@ WHERE (
         senderId = ?
         AND receiverId = ?
     )
-ORDER BY createdAt DESC
 `
 
 type GetDmsParams struct {

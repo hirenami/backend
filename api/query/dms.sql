@@ -21,8 +21,7 @@ WHERE (
     OR (
         senderId = ?
         AND receiverId = ?
-    )
-ORDER BY createdAt DESC;
+    );
 
 -- name: GetLastMessages :many
 SELECT *
@@ -77,5 +76,4 @@ SELECT
 FROM dms
 WHERE
     senderId = ?
-    OR receiverId = ?
-ORDER BY createdAt DESC;
+    OR receiverId = ?;

@@ -70,8 +70,8 @@ type Profile struct {
 }
 
 type Conversation struct {
-	User sqlc.User    // ユーザー情報
-	Dms  []sqlc.Dm    // DM一覧
+	User sqlc.User `json:"user"`
+	Dms  []sqlc.Dm `json:"dms"`
 }
 
 type ListingParams struct {
