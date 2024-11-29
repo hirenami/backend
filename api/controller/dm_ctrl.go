@@ -7,9 +7,10 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"sync"
 )
 
-var clients = make(map[string]*websocket.Conn) // ユーザーID -> WebSocket接続
+var clients = sync.Map{}
 var upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -18,69 +19,55 @@ var upgrader = websocket.Upgrader{
 
 // WebSocket接続時にユーザーIDをクエリパラメータで受け取る
 func (c *Controller) handleConnection(w http.ResponseWriter, r *http.Request) {
-	// クエリパラメータからユーザーIDを取得
-	userID := mux.Vars(r)["userId"]
+    userID := mux.Vars(r)["userId"]
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer func() {
+        clients.Delete(userID)
+        conn.Close()
+    }()
 
-	// WebSocket接続のアップグレード
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
+    clients.Store(userID, conn)
+    log.Printf("User %s connected", userID)
 
-	// ユーザーIDをキーにしてWebSocket接続をマップに追加
-	clients[userID] = conn
-	log.Printf("User %s connected", userID)
+    type Message struct {
+        SenderID   string `json:"senderId"`
+        ReceiverID string `json:"receiverId"`
+        Content    string `json:"content"`
+    }
 
-	type Message struct {
-		SenderID   string `json:"senderId"`
-		ReceiverID string `json:"receiverId"`
-		Content    string `json:"content"`
-	}
-	log.Println("conn" , clients)
-	// メッセージ受信処理
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			delete(clients, userID) // 接続が切れた場合、マップから削除
-			return
-		}
-		
+    for {
+        _, p, err := conn.ReadMessage()
+        if err != nil {
+            log.Println("ReadMessage error:", err)
+            return
+        }
 
-		// メッセージをJSONとしてパース
-		var msg Message
-		err = json.Unmarshal(p, &msg)
-		if err != nil {
-			log.Println("Error unmarshalling message:", err)
-			continue
-		}
-		log.Println("msg", msg)
-		
+        var msg Message
+        if err := json.Unmarshal(p, &msg); err != nil {
+            log.Println("Error unmarshalling message:", err)
+            continue
+        }
 
-		// メッセージの送信先ユーザーID（receiverId）
-		receiverConn, ok := clients[msg.ReceiverID]
-		if ok {
-			err = receiverConn.WriteMessage(messageType, p)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("receiverConn", msg.ReceiverID)
-		} else {
-			log.Printf("Receiver %s not connected", msg.ReceiverID)
-		}
-		senderConn, ok := clients[msg.SenderID]
-		if ok {
-			err = senderConn.WriteMessage(messageType, p)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("senderConn", msg.SenderID)
-		} else {
-			log.Printf("Sender %s not connected", msg.SenderID)
-		}
-	}
+        if receiverConn, ok := clients.Load(msg.ReceiverID); ok {
+            if err := receiverConn.(*websocket.Conn).WriteMessage(websocket.TextMessage, p); err != nil {
+                log.Println("Error sending message to receiver:", err)
+            }
+        } else {
+            log.Printf("Receiver %s not connected", msg.ReceiverID)
+        }
+
+        if senderConn, ok := clients.Load(msg.SenderID); ok {
+            if err := senderConn.(*websocket.Conn).WriteMessage(websocket.TextMessage, p); err != nil {
+                log.Println("Error sending message to sender:", err)
+            }
+        } else {
+            log.Printf("Sender %s not connected", msg.SenderID)
+        }
+    }
 }
 
 func (c *Controller) GetAllDmsCtrl(w http.ResponseWriter, r *http.Request) {

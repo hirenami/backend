@@ -110,7 +110,6 @@ func (u *Usecase) EraseTweetUsecase(ctx context.Context, myId string, tweetId in
 		}
 		return err
 	}
-
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {

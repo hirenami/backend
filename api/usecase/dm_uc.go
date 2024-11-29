@@ -38,6 +38,15 @@ func (u *Usecase) CreateDm(ctx context.Context, userId, repid, content, media_ur
 		return err
 	}
 
+	err = u.dao.CreateNotification(ctx, tx, userId, repid, "dm",0)
+	if err != nil {
+		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return err
+	}
+
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
@@ -63,9 +72,17 @@ func (u *Usecase) GetDms(ctx context.Context, userId, repid string) ([]sqlc.Dm, 
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
-	dm, err := u.dao.GetDms(ctx, tx, userId, repid)
+	dms, err := u.dao.GetDms(ctx, tx, userId, repid)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return nil, err
+	}
+
+	err = u.dao.SetDmStatus(ctx, tx, repid, userId)
+	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
@@ -78,7 +95,7 @@ func (u *Usecase) GetDms(ctx context.Context, userId, repid string) ([]sqlc.Dm, 
 		return nil, err
 	}
 
-	return dm, nil
+	return dms, nil
 }
 
 // Usecase メソッドの実装

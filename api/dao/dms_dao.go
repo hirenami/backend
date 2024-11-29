@@ -79,9 +79,7 @@ func (d *Dao) SetDmStatus(ctx context.Context, tx *sql.Tx, senderId, receiverId 
 
 	args := sqlc.SetDmStatusParams{
 		Senderid:     senderId,
-		Senderid_2:   receiverId,
 		Receiverid:   receiverId,
-		Receiverid_2: senderId,
 	}
 
 	return txQueries.SetDmStatus(ctx, args)

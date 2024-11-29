@@ -58,10 +58,6 @@ SET
 WHERE (
         senderId = ?
         AND receiverId = ?
-    )
-    OR (
-        senderId = ?
-        AND receiverId = ?
     );
 
 -- name: GetAllDms :many
@@ -76,4 +72,5 @@ SELECT
 FROM dms
 WHERE
     senderId = ?
-    OR receiverId = ?;
+    OR receiverId = ?
+ORDER BY createdAt DESC;
