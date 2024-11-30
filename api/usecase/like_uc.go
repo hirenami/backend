@@ -263,7 +263,7 @@ func (u *Usecase) GetUserslikeUsecase(ctx context.Context, myId, userId string) 
 			tx.Rollback()
 			return nil, err
 		}
-		isprivate := !isfollowing && user.Isprivate
+		isprivate := !isfollowing && user.Isprivate && !(myId == tweet.Userid)
 
 		// TweetParams構造体にデータをまとめる
 		tweetParamsList[i] = model.TweetParams{

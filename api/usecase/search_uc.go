@@ -65,7 +65,7 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context,myId, keyword strin
 			tx.Rollback()
 			return nil, err
 		}
-		isprivate := !isfollowing && user.Isprivate 
+		isprivate := !isfollowing && user.Isprivate && !(myId == user.Userid)
 
 		if isblocked || isprivate || tweet.Isdeleted {
 			continue
@@ -152,7 +152,7 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 				return nil, err
 			}
 		}
-		isprivate := !isFollowing && user.Isprivate
+		isprivate := !isFollowing && user.Isprivate && !(myId == user.Userid)
 
 		// Params構造体にデータをまとめる
 		UserParamsList[i] = model.Profile{
@@ -235,7 +235,7 @@ func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, myId,keyword strin
 				return nil, err
 			}
 		}
-		isprivate := !isfollowing && user.Isprivate
+		isprivate := !isfollowing && user.Isprivate && !(myId == user.Userid)
 
 		if isblocked || isprivate || tweet.Isdeleted {
 			continue

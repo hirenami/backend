@@ -1,11 +1,11 @@
 package usecase
 
 import (
+	"api/model"
 	"api/sqlc"
 	"context"
 	"errors"
 	"log"
-	"api/model"
 )
 
 // Usecase メソッドの実装
@@ -38,13 +38,15 @@ func (u *Usecase) CreateDm(ctx context.Context, userId, repid, content, media_ur
 		return err
 	}
 
-	err = u.dao.CreateNotification(ctx, tx, userId, repid, "dm",0)
-	if err != nil {
-		// エラーが発生した場合、ロールバック
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+	if content != "" || media_url != "" {
+		err = u.dao.CreateNotification(ctx, tx, userId, repid, "dm", 0)
+		if err != nil {
+			// エラーが発生した場合、ロールバック
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return err
 		}
-		return err
 	}
 
 	// トランザクションをコミット

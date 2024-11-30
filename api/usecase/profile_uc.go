@@ -134,7 +134,7 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, myId string, userId str
 		}
 	}
 
-	isprivate := (!isFollowing && user.Isprivate)
+	isprivate := (!isFollowing && user.Isprivate && !(myId == userId))
 
 	// トランザクションをコミット
 	err = tx.Commit()

@@ -232,7 +232,7 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 		tx.Rollback()
 		return nil, err
 	}
-	isprivate := !isfollowing && user.Isprivate 
+	isprivate := !isfollowing && user.Isprivate && !(myId == userId)
 
 
 	// ユーザーのツイートを取得
@@ -349,7 +349,7 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
 		tx.Rollback()
 		return model.TweetParams{}, err
 	}
-	isprivate := !isfollowing && user.Isprivate
+	isprivate := !isfollowing && user.Isprivate && !(myId == user.Userid)
 
 	//impressionをインクリメント
 	err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)

@@ -184,7 +184,7 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 			continue
 		}
 
-		isprivate := !isFollowing && user.Isprivate
+		isprivate := !isFollowing && user.Isprivate && !(myId == followId)
 
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{
@@ -279,7 +279,7 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 			continue
 		}
 
-		isprivate := !isFollowing && user.Isprivate
+		isprivate := !isFollowing && user.Isprivate && !(myId == followersId)
 
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{

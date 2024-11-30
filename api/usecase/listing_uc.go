@@ -122,7 +122,7 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 			continue
 		}
 
-		isprivate := !isFollowing && user.Isprivate
+		isprivate := !isFollowing && user.Isprivate && !(myId == userId)
 
 		// Params構造体にデータをまとめる
 		users[i] = model.Profile{

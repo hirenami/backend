@@ -216,7 +216,7 @@ func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, myId 
 			tx.Rollback()
 			return nil, err
 		}
-		isprivate := !isfollowing && user.Isprivate 
+		isprivate := !isfollowing && user.Isprivate && !(myId == userId)
 
 		if isblocked || isprivate || tweet.Isdeleted {
 			continue
@@ -306,7 +306,7 @@ func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, myId strin
 			tx.Rollback()
 			return nil, err
 		}
-		isprivate := !isfollowing && user.Isprivate
+		isprivate := !isfollowing && user.Isprivate && !(myId == reply.Userid)
 
 		if isblocked || isprivate || reply.Isdeleted {
 			continue
