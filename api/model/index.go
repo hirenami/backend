@@ -87,6 +87,12 @@ type PurchaseParams struct {
 	Tweet	sqlc.Tweet    `json:"tweet"`
 }
 
+type ListingDetails struct {
+	Listing sqlc.Listing `json:"listing"`
+	User    []Profile    `json:"user"`
+	Tweet   sqlc.Tweet   `json:"tweet"`
+}
+
 type Listing struct {
 	Listingid        int64     `json:"listingid"`
 	Userid           string    `json:"userid"`

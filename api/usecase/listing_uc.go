@@ -47,36 +47,103 @@ func (u* Usecase) CreateListingUsecase(ctx context.Context,listingId int64, user
 	return nil
 }
 
-func (u* Usecase) GetListingUsecase(ctx context.Context, listingid int64) (model.ListingParams, error) {
+func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid int64) (model.ListingDetails, error) {
 	tx , err := u.dao.Begin()
 	if err != nil {
-		return model.ListingParams{}, err
+		return model.ListingDetails{}, err
 	}
+
 	listing , err := u.dao.GetListing(ctx, tx, listingid)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return model.ListingParams{}, err
+			return model.ListingDetails{}, err
 		}
-		return model.ListingParams{}, err
-	}
-	
-	user , err := u.dao.GetProfile(ctx, tx, listing.Userid)
-	if err != nil {
-		return model.ListingParams{}, err
+		return model.ListingDetails{}, err
 	}
 
-	tweet, err := u.dao.GetTweet(ctx, tx, listing.Tweetid)
+	tweet , err := u.dao.GetTweet(ctx, tx, int32(listing.Tweetid))
 	if err != nil {
-		return model.ListingParams{}, err
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.ListingDetails{}, err
+		}
+		return model.ListingDetails{}, err
 	}
 
+	userIds , err := u.dao.GetPurchaseByListingId(ctx,tx, listing.Listingid)
+	if err != nil {
+		return model.ListingDetails{}, err
+	}
+
+	users := make([]model.Profile, len(userIds))
+
+	for i, userId := range userIds {
+		user, err := u.dao.GetProfile(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		isFollowing, err := u.dao.IsFollowing(ctx, tx, userId, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		isFollower, err := u.dao.IsFollowing(ctx, tx, myId, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		following, err := u.dao.CountFollowing(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		followers, err := u.dao.CountFollower(ctx, tx, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+		if isblocked {
+			continue
+		}
+
+		isprivate := !isFollowing && user.Isprivate
+
+		// Params構造体にデータをまとめる
+		users[i] = model.Profile{
+			User:        user,
+			Follows:     int32(following),
+			Followers:   int32(followers),
+			Isfollows:   isFollowing,
+			Isfollowers: isFollower,
+			Isblocked:   isblocked,
+			Isprivate:  isprivate,
+		}
+	}
+
+	// トランザクションをコミット
 	if err := tx.Commit(); err != nil {
-		return model.ListingParams{}, err
+		return model.ListingDetails{}, err
 	}
 
-	return model.ListingParams{
+	return model.ListingDetails{
 		Listing: listing,
-		User: user,
+		User: users,
 		Tweet: tweet,
 	}, nil
 }

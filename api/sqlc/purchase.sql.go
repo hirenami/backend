@@ -42,6 +42,34 @@ func (q *Queries) GetPurchase(ctx context.Context, purchaseid int32) (Purchase, 
 	return i, err
 }
 
+const getPurchaseByListing = `-- name: GetPurchaseByListing :many
+SELECT userId from purchase
+WHERE listingId = ?
+`
+
+func (q *Queries) GetPurchaseByListing(ctx context.Context, listingid int64) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getPurchaseByListing, listingid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var userid string
+		if err := rows.Scan(&userid); err != nil {
+			return nil, err
+		}
+		items = append(items, userid)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserPurchases = `-- name: GetUserPurchases :many
 SELECT purchaseid, userid, listingid, created_at, status from purchase
 WHERE userId = ?

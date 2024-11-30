@@ -9,3 +9,7 @@ WHERE userId = ?;
 -- name: CreatePurchase :exec
 INSERT INTO purchase (userId, listingId)
 VALUES (?, ?);
+
+-- name: GetPurchaseByListing :many
+SELECT userId from purchase
+WHERE listingId = ?;

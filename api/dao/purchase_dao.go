@@ -31,3 +31,10 @@ func (d *Dao) CreatePurchase (ctx context.Context,tx *sql.Tx, userId string, lis
 
 	return txqueries.CreatePurchase(ctx,args)
 }
+
+func (d *Dao) GetPurchaseByListingId (ctx context.Context,tx *sql.Tx, purchaseId int64) ([]string,error) {
+	
+	txqueries := d.WithTx(tx)
+
+	return txqueries.GetPurchaseByListing(ctx,purchaseId)
+}

@@ -18,6 +18,14 @@ func (c *Controller) GetListing(w http.ResponseWriter, r *http.Request) {
 
 	setCORSHeaders(w)
 
+	uid := r.Context().Value(uidKey).(string)
+	ctx := context.Background()
+	userId,err := c.Usecase.GetIdByUID(ctx,uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	listingId := mux.Vars(r)["listingId"]
 	ListingId, err := strconv.Atoi(listingId) // strconv.Atoi は int を返す
 	if err != nil {
@@ -25,8 +33,8 @@ func (c *Controller) GetListing(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	ctx := context.Background()
-	listing, err := c.Usecase.GetListingUsecase(ctx, int64(ListingId))
+
+	listing, err := c.Usecase.GetListingUsecase(ctx, userId,int64(ListingId))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
