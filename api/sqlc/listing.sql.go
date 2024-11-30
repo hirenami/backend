@@ -41,6 +41,17 @@ func (q *Queries) CreateListing(ctx context.Context, arg CreateListingParams) er
 	return err
 }
 
+const deleteStock = `-- name: DeleteStock :exec
+UPDATE listing
+SET stock = stock - 1
+WHERE listingId = ?
+`
+
+func (q *Queries) DeleteStock(ctx context.Context, listingid int64) error {
+	_, err := q.db.ExecContext(ctx, deleteStock, listingid)
+	return err
+}
+
 const getListing = `-- name: GetListing :one
 SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE listingId = ?

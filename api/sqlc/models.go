@@ -97,10 +97,10 @@ func (ns NullNotificationsStatus) Value() (driver.Value, error) {
 type PurchaseStatus string
 
 const (
-	PurchaseStatusListing   PurchaseStatus = "listing"
-	PurchaseStatusCompleted PurchaseStatus = "completed"
-	PurchaseStatusCancelled PurchaseStatus = "cancelled"
-	PurchaseStatusPurchased PurchaseStatus = "purchased"
+	PurchaseStatusValue0 PurchaseStatus = "注文確定"
+	PurchaseStatusValue1 PurchaseStatus = "配送中"
+	PurchaseStatusValue2 PurchaseStatus = "出荷完了"
+	PurchaseStatusValue3 PurchaseStatus = "キャンセル"
 )
 
 func (e *PurchaseStatus) Scan(src interface{}) error {

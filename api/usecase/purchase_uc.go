@@ -127,6 +127,14 @@ func (u *Usecase) CreatePurchaseUsecase(ctx context.Context, userId string, list
 		return err
 	}
 
+	err = u.dao.DeleteStock(ctx, tx, listingId)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return err
+		}
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}

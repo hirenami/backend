@@ -13,3 +13,8 @@ WHERE tweetId = ?;
 -- name: CreateListing :exec
 INSERT INTO listing (listingId, userId, tweetId, listingname, listingdescription, listingprice, type, stock, `condition`)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: DeleteStock :exec
+UPDATE listing
+SET stock = stock - 1
+WHERE listingId = ?;

@@ -44,4 +44,11 @@ func (d *Dao) GetUserListings(ctx context.Context,tx *sql.Tx, userid string) ([]
 	return txQueries.GetUserListings(ctx, userid)
 }
 
+func (d *Dao) DeleteStock (ctx context.Context,tx *sql.Tx, listingid int64) error {
+	
+	txQueries := d.WithTx(tx)
+
+	return txQueries.DeleteStock(ctx, listingid)
+}
+
 
