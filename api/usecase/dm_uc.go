@@ -164,6 +164,13 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) ([]model.Conversat
 			return nil, err
 		}
 
+		bool, err := u.dao.IsBlocked(ctx, tx, partnerId, myId)
+		if err != nil {
+			return nil, err
+		} else if bool {
+			continue
+		}
+
 		// 既存のデータを取得、なければ新規作成
 		conv, exists := conversationMap[partnerId]
 		if !exists {
