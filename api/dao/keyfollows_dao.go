@@ -48,3 +48,10 @@ func (d *Dao) IsKeyFollowExists(ctx context.Context, tx *sql.Tx, followerid, fol
 
 	return txQueries.IsFollowRequest(ctx, arg)
 }
+
+func (d *Dao) DeleteKeyFollows(ctx context.Context, tx *sql.Tx, followerid string) error {
+	// トランザクション用のクエリを生成
+	txQueries := d.WithTx(tx)
+
+	return txQueries.DeleteKeyFollows(ctx, followerid)
+}

@@ -18,3 +18,7 @@ SELECT EXISTS (
 	FROM keyfollows
 	WHERE followerId = ? AND followingId = ?
 );
+
+-- name: DeleteKeyFollows :exec
+DELETE FROM keyfollows
+WHERE followerId = ?;

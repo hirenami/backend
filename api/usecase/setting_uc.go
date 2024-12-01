@@ -110,6 +110,16 @@ func (u *Usecase) UpdatePrivateUsecase (ctx context.Context, myId string, isPriv
 		}
 		return err
 	}
+
+	err = u.dao.DeleteKeyFollows(ctx, tx, myId)
+	if err != nil {
+		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return err
+	}
+	
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {

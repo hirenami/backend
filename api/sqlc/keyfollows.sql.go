@@ -42,6 +42,16 @@ func (q *Queries) DeleteKeyFollow(ctx context.Context, arg DeleteKeyFollowParams
 	return err
 }
 
+const deleteKeyFollows = `-- name: DeleteKeyFollows :exec
+DELETE FROM keyfollows
+WHERE followerId = ?
+`
+
+func (q *Queries) DeleteKeyFollows(ctx context.Context, followerid string) error {
+	_, err := q.db.ExecContext(ctx, deleteKeyFollows, followerid)
+	return err
+}
+
 const getFollowRequest = `-- name: GetFollowRequest :many
 SELECT followingId FROM keyfollows WHERE followerId = ?
 `
