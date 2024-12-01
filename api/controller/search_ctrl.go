@@ -10,13 +10,6 @@ import (
 // GET /serach/{keyword}
 
 func (c *Controller) SearchByKeywordCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
 	keyword := mux.Vars(r)["keyword"]
 
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
@@ -44,13 +37,6 @@ func (c *Controller) SearchByKeywordCtrl(w http.ResponseWriter, r *http.Request)
 
 // GET /serach/{keyword}/user
 func (c *Controller) SearchByUserCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
 	keyword := mux.Vars(r)["keyword"]
 
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
@@ -78,13 +64,6 @@ func (c *Controller) SearchByUserCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /serach/{keyword}/tag
 func (c *Controller) SearchByHashtagCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
 	keyword := mux.Vars(r)["keyword"]
 
 	firebaseUid, ok := r.Context().Value(uidKey).(string)

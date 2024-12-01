@@ -10,14 +10,6 @@ import (
 )
 
 func (c *Controller) GetListing(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -50,14 +42,6 @@ func (c *Controller) GetListing(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetListingByTweet(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	tweetId := mux.Vars(r)["tweetId"]
 	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す
 	if err != nil {
@@ -82,14 +66,6 @@ func (c *Controller) GetListingByTweet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) CreateListing(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -117,14 +93,6 @@ func (c *Controller) CreateListing(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetUserListings(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	userId := mux.Vars(r)["userId"]
 	ctx := context.Background()
 	listings, err := c.Usecase.GetUserListingsUsecase(ctx, userId)
@@ -143,12 +111,6 @@ func (c *Controller) GetUserListings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetMyListingCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	setCORSHeaders(w)
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)

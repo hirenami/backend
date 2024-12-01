@@ -11,15 +11,7 @@ import (
 
 // POST /retweet/{tweetId}
 
-func (c *Controller) CreateRetweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
+func (c *Controller) CreateRetweetCtrl(w http.ResponseWriter, r *http.Request) {	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -44,15 +36,7 @@ func (c *Controller) CreateRetweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 // POST /retweet/{tweetId}/quote
 
-func (c *Controller) CreateQuoteCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
+func (c *Controller) CreateQuoteCtrl(w http.ResponseWriter, r *http.Request) {	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -82,15 +66,7 @@ func (c *Controller) CreateQuoteCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /retweet/{tweetId}
 
-func (c *Controller) IsRetweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
+func (c *Controller) IsRetweetCtrl(w http.ResponseWriter, r *http.Request) {	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -116,15 +92,7 @@ func (c *Controller) IsRetweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /retweet/{tweetId}
 
-func (c *Controller) DeleteRetweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
+func (c *Controller) DeleteRetweetCtrl(w http.ResponseWriter, r *http.Request) {	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)

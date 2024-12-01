@@ -12,14 +12,6 @@ import (
 // POST /reply/{tweetId}
 
 func (c *Controller) CreateReplyCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -55,14 +47,6 @@ func (c *Controller) CreateReplyCtrl(w http.ResponseWriter, r *http.Request) {
 // GET /reply/{tweetId}
 
 func (c *Controller) GetReplyCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -99,14 +83,6 @@ func (c *Controller) GetReplyCtrl(w http.ResponseWriter, r *http.Request) {
 // GET /reply/{tweetId}/replied
 
 func (c *Controller) GetTweetRepliedToCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -141,15 +117,7 @@ func (c *Controller) GetTweetRepliedToCtrl(w http.ResponseWriter, r *http.Reques
 	w.Write(jsonData)
 }
 
-func (c *Controller) GetUsersReplyCtrl (w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
+func (c *Controller) GetUsersReplyCtrl (w http.ResponseWriter, r *http.Request) {	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	Id,err := c.Usecase.GetIdByUID(ctx,uid)

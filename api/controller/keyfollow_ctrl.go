@@ -175,6 +175,6 @@ func (c *Controller) GetFollowRequestsCtrl (w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Write(jsonData)
 	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
 }

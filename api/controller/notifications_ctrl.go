@@ -11,14 +11,6 @@ import (
 // GET /notifications
 
 func (c *Controller) GetNotificationsCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -46,14 +38,6 @@ func (c *Controller) GetNotificationsCtrl(w http.ResponseWriter, r *http.Request
 // PUT /notifications/{notificationId}
 
 func (c *Controller) UpdateNotificationStatusCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	ctx := context.Background()
 	
 	notificationId := mux.Vars(r)["notificationId"]

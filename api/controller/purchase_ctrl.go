@@ -31,13 +31,6 @@ func (c *Controller) UpdatePremiumCtrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetPurchaseCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
 	purchaseId := mux.Vars(r)["purchaseId"]
 	purchaseid, err := strconv.Atoi(purchaseId)
 	if err != nil {
@@ -57,14 +50,6 @@ func (c *Controller) GetPurchaseCtrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetMyPurchaseCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -88,14 +73,6 @@ func (c *Controller) GetMyPurchaseCtrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) CreatePurchaseCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)

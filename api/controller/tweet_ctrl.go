@@ -12,14 +12,6 @@ import (
 
 // POST /tweet
 func (c *Controller) CreateTweetTweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	req := model.Tweet{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -51,14 +43,6 @@ func (c *Controller) CreateTweetTweetCtrl(w http.ResponseWriter, r *http.Request
 
 // PUT /tweet/{tweetId}
 func (c *Controller) UpdateTweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	req := model.Tweet{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -98,14 +82,6 @@ func (c *Controller) UpdateTweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /tweet/{tweetId}
 func (c *Controller) DeleteTweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -137,14 +113,6 @@ func (c *Controller) DeleteTweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /tweet/{userId}
 func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	vars := mux.Vars(r)
 	userId := vars["userId"]
 
@@ -178,14 +146,6 @@ func (c *Controller) GetUsersTweetCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /tweet
 func (c *Controller) GetTweetCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	vars := mux.Vars(r)
 	tweetId := vars["tweetId"]
 	TweetId, err := strconv.Atoi(tweetId) // strconv.Atoi は int を返す

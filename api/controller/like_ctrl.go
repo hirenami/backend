@@ -11,14 +11,6 @@ import (
 // POST /like/{tweetId}
 
 func (c *Controller) CreateLikeCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -44,14 +36,6 @@ func (c *Controller) CreateLikeCtrl(w http.ResponseWriter, r *http.Request) {
 // DELETE /like/{tweetId}
 
 func (c *Controller) DeleteLikeCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -75,14 +59,6 @@ func (c *Controller) DeleteLikeCtrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetUserslikeCtrl (w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-	
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	Id,err := c.Usecase.GetIdByUID(ctx,uid)

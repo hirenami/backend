@@ -94,11 +94,11 @@ func (c *Controller) GetBlocksCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	jsonData, err := json.Marshal(blocks)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Write(jsonData)
-	w.WriteHeader(http.StatusOK)
 }
