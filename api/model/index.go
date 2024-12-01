@@ -8,6 +8,16 @@ import (
 type TweetParams struct {
 	Tweet    sqlc.Tweet `json:"tweet"`
 	User     sqlc.User  `json:"user"`
+	Retweet  TweetParam `json:"retweet"`
+	Likes    bool       `json:"likes"`
+	Retweets bool       `json:"retweets"`
+	Isblocked   bool      `json:"isblocked"`
+	Isprivate   bool      `json:"isprivate"`
+}
+
+type TweetParam struct {
+	Tweet    sqlc.Tweet `json:"tweet"`
+	User     sqlc.User  `json:"user"`
 	Likes    bool       `json:"likes"`
 	Retweets bool       `json:"retweets"`
 	Isblocked   bool      `json:"isblocked"`

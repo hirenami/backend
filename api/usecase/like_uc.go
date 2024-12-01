@@ -216,67 +216,19 @@ func (u *Usecase) GetUserslikeUsecase(ctx context.Context, myId, userId string) 
 	tweetParamsList := make([]model.TweetParams, len(tweetid))
 
 	for i, tweet := range tweetid {
-		// ツイート情報を取得
-		tweet, err := u.dao.GetTweet(ctx, tx, tweet)
+		tweetlist , err := u.GetTweetParamsUsecase(ctx, tx, myId, tweet)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 			}
 			return nil, err
 		}
-
-		// ユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// ツイートが「いいね」されているか確認
-		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// ツイートがリツイートされているか確認
-		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		isblocked, err := u.dao.IsBlocked(ctx, tx, tweet.Userid, myId)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-
-		isfollowing, err := u.dao.IsFollowing(ctx, tx, tweet.Userid, myId)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isprivate := !isfollowing && user.Isprivate && !(myId == tweet.Userid)
 
 		// TweetParams構造体にデータをまとめる
-		tweetParamsList[i] = model.TweetParams{
-			Tweet:     tweet,
-			User:      user,
-			Likes:     liked,
-			Retweets:  retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
-		}
+		tweetParamsList[i] = tweetlist
 
 		//impressionをインクリメント
-		err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)
+		err = u.dao.PlusImpression(ctx, tx, tweet)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)

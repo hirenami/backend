@@ -38,34 +38,16 @@ func (u *Usecase) GetTimelineUsecase(ctx context.Context, id string) ([]model.Tw
 	}
 
 	// 結果を格納するスライス
-	tweetParams := make([]model.TweetParams, len(tweets))
+	var tweetParams []model.TweetParams
 
 	// ユーザー情報、いいね、リツイートの情報を取得
-	for i, tweet := range tweets {
-		// ユーザー情報の取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+	for _, tweet := range tweets {
+		tweetparam, err := u.GetTweetParamsUsecase(ctx, tx, id, tweet.Tweetid)
 		if err != nil {
 			return nil, err
 		}
-
-		// いいね情報の取得
-		liked, err := u.dao.IsLiked(ctx, tx, id, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-
-		// リツイート情報の取得
-		retweeted, err := u.dao.IsRetweet(ctx, tx, id, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-
-		// TweetParamsにデータを詰め込む
-		tweetParams[i] = model.TweetParams{
-			Tweet:     tweet,
-			User:      user,
-			Likes:     liked,
-			Retweets:  retweeted,
+		if(tweetparam!=model.TweetParams{}){
+			tweetParams = append(tweetParams, tweetparam)
 		}
 
 		//impressionをインクリメント

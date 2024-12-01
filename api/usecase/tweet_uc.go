@@ -217,24 +217,6 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 		return nil, errors.New("user does not exist")
 	}
 
-	isblocked , err := u.dao.IsBlocked(ctx, tx, userId, myId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	isfollowing , err := u.dao.IsFollowing(ctx, tx, userId,myId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	user , err := u.dao.GetProfile(ctx, tx, userId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	isprivate := !isfollowing && user.Isprivate && !(myId == userId)
-
-
 	// ユーザーのツイートを取得
 	tweets, err := u.dao.GetUsersTweet(ctx, tx, userId)
 	if err != nil {
@@ -245,44 +227,15 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 	}
 
 	// 結果を格納するためのスライス
-	tweetParamsList := make([]model.TweetParams, len(tweets))
+	var tweetParamsList []model.TweetParams
 
-	for i, tweet := range tweets {
-		// ユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+	for _, tweet := range tweets {
+		tweetParams, err := u.GetTweetParamsUsecase(ctx,tx, myId,int32(tweet.Tweetid))
 		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
 			return nil, err
 		}
-
-		// ツイートが「いいね」されているか確認
-		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// ツイートがリツイートされているか確認
-		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// TweetParams構造体にデータをまとめる
-		tweetParamsList[i] = model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
+		if tweetParams != (model.TweetParams{}) {
+			tweetParamsList = append(tweetParamsList, tweetParams)
 		}
 
 		//impressionをインクリメント
