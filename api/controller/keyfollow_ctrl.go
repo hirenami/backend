@@ -2,9 +2,11 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -146,5 +148,33 @@ func (c *Controller) RejectRequestCtrl (w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (c *Controller) GetFollowRequestsCtrl (w http.ResponseWriter, r *http.Request) {
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	requests, err := c.Usecase.GetKeyFollowsUscase(ctx, Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(requests)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
 	w.WriteHeader(http.StatusOK)
 }

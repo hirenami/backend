@@ -69,9 +69,11 @@ func SetupRoutes(controller *Controller) *mux.Router {
 
 	r.Handle("/block/{blockId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateBlockCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/block/{blockId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteBlockCtrl))).Methods("DELETE","OPTIONS")
+	r.Handle("/block", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetBlocksCtrl))).Methods("GET","OPTIONS")
 
 	r.Handle("/keyfollow/{followId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateFollowRequestCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/keyfollow/{followId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteFollowRequestCtrl))).Methods("DELETE","OPTIONS")
+	r.Handle("/keyfollow", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetFollowRequestsCtrl))).Methods("GET","OPTIONS")
 	r.Handle("/keyfollow/{followId}/approve", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.ApproveRequestCtrl))).Methods("POST","OPTIONS")
 	r.Handle("/keyfollow/{followId}/reject", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.RejectRequestCtrl))).Methods("DELETE","OPTIONS")
 

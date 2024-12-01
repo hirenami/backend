@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
+	"encoding/json"
 )
 
 func (c *Controller) CreateBlockCtrl(w http.ResponseWriter, r *http.Request) {
@@ -71,5 +72,33 @@ func (c *Controller) DeleteBlockCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (c *Controller) GetBlocksCtrl(w http.ResponseWriter, r *http.Request) {
+	firebaseUid, ok := r.Context().Value(uidKey).(string)
+	if !ok {
+		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	Id, err := c.Usecase.GetIdByUID(ctx, firebaseUid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	blocks, err := c.Usecase.GetBlocksUsecase(ctx, Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(blocks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
 	w.WriteHeader(http.StatusOK)
 }
