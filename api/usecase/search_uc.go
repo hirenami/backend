@@ -55,7 +55,7 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context,myId, keyword strin
 			return nil, err
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, tweet.Userid, myId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -146,13 +146,32 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			}
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, user.Userid, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return nil, err
 			}
 		}
+
+		if(isblocked){
+			continue
+		}
+
 		isprivate := !isFollowing && user.Isprivate && !(myId == user.Userid)
+
+		isblock, err := u.dao.IsBlocked(ctx, tx, myId,user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, user.Userid,myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
 
 		// Params構造体にデータをまとめる
 		UserParamsList[i] = model.Profile{
@@ -163,6 +182,8 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			Isfollowers: isFollower,
 			Isblocked:   isblocked,
 			Isprivate:   isprivate,
+			Isblock:     isblock,
+			Isrequest:   isrequest,
 		}
 	}
 
@@ -223,7 +244,7 @@ func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, myId,keyword strin
 			return nil, err
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, user.Userid, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return nil, err

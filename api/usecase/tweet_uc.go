@@ -217,7 +217,7 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 		return nil, errors.New("user does not exist")
 	}
 
-	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, userId)
+	isblocked , err := u.dao.IsBlocked(ctx, tx, userId, myId)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -337,7 +337,7 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
         return model.TweetParams{}, err
     }
 
-	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+	isblocked , err := u.dao.IsBlocked(ctx, tx,tweet.Userid, myId)
 	if err != nil {
 		tx.Rollback()
 		return model.TweetParams{}, err

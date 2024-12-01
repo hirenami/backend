@@ -252,7 +252,7 @@ func (u *Usecase) GetUserslikeUsecase(ctx context.Context, myId, userId string) 
 			return nil, err
 		}
 
-		isblocked, err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		isblocked, err := u.dao.IsBlocked(ctx, tx, tweet.Userid, myId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err

@@ -67,6 +67,8 @@ type Profile struct {
 	Isfollowers bool      `json:"isfollowers"`
 	Isblocked   bool      `json:"isblocked"`
 	Isprivate   bool      `json:"isprivate"`
+	Isblock     bool      `json:"isblock"`
+	Isrequest   bool      `json:"isrequest"`
 }
 
 type Conversation struct {

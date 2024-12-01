@@ -127,7 +127,7 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, myId string, userId str
 		}
 	}
 
-	isblocked, err := u.dao.IsBlocked(ctx, tx, myId, userId)
+	isblocked, err := u.dao.IsBlocked(ctx, tx, userId, myId)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return model.Profile{}, err
@@ -136,11 +136,25 @@ func (u *Usecase) GetProfileUsecase(ctx context.Context, myId string, userId str
 
 	isprivate := (!isFollowing && user.Isprivate && !(myId == userId))
 
+	isblock, err := u.dao.IsBlocked(ctx, tx, myId, userId)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.Profile{}, err
+		}
+	}
+
+	isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, userId , myId)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.Profile{}, err
+		}
+	}
+
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
 		return model.Profile{}, err
 	}
 
-	return model.Profile{User: user, Follows: int32(following), Followers: int32(followers), Isfollows: isFollowing, Isfollowers: isFollower, Isblocked: isblocked, Isprivate: isprivate}, nil
+	return model.Profile{User: user, Follows: int32(following), Followers: int32(followers), Isfollows: isFollowing, Isfollowers: isFollower, Isblocked: isblocked, Isprivate: isprivate, Isblock: isblock, Isrequest: isrequest}, nil
 }

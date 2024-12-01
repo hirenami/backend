@@ -67,6 +67,9 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.Handle("/dm", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateDm))).Methods("POST","OPTIONS")
 	r.Handle("/dm/{userId}/handle", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetDmsCtrl))).Methods("GET","OPTIONS")
 
+	r.Handle("/block/{blockId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.CreateBlockCtrl))).Methods("POST","OPTIONS")
+	r.Handle("/block/{blockId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.DeleteBlockCtrl))).Methods("DELETE","OPTIONS")
+
 	r.HandleFunc("/login", controller.Login)
 	return r
 }

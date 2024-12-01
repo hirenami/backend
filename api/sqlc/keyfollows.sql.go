@@ -68,3 +68,23 @@ func (q *Queries) GetFollowRequest(ctx context.Context, followerid string) ([]st
 	}
 	return items, nil
 }
+
+const isFollowRequest = `-- name: IsFollowRequest :one
+SELECT EXISTS (
+	SELECT 1
+	FROM keyfollows
+	WHERE followerId = ? AND followingId = ?
+)
+`
+
+type IsFollowRequestParams struct {
+	Followerid  string `json:"followerid"`
+	Followingid string `json:"followingid"`
+}
+
+func (q *Queries) IsFollowRequest(ctx context.Context, arg IsFollowRequestParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isFollowRequest, arg.Followerid, arg.Followingid)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}

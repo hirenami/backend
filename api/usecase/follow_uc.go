@@ -174,7 +174,7 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 			}
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, followId)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, followId, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return nil, err
@@ -186,6 +186,20 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 
 		isprivate := !isFollowing && user.Isprivate && !(myId == followId)
 
+		isblock , err := u.dao.IsBlocked(ctx, tx, myId, followId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, followId, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{
 			User:        user,
@@ -195,6 +209,8 @@ func (u *Usecase) GetFollowingUsecase(ctx context.Context, myId, userId string) 
 			Isfollowers: isFollower,
 			Isblocked:   isblocked,
 			Isprivate:  isprivate,
+			Isblock:     isblock,
+			Isrequest:   isrequest,
 		}
 	}
 
@@ -269,7 +285,7 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 			}
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, followersId)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, followersId, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return nil, err
@@ -281,6 +297,20 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 
 		isprivate := !isFollowing && user.Isprivate && !(myId == followersId)
 
+		isblock , err := u.dao.IsBlocked(ctx, tx, myId, followersId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, followersId, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
 		// Params構造体にデータをまとめる
 		followsParamsList[i] = model.Profile{
 			User:        user,
@@ -290,6 +320,8 @@ func (u *Usecase) GetFollowerUsecase(ctx context.Context, myId, userId string) (
 			Isfollowers: isFollower,
 			Isblocked:   isblocked,
 			Isprivate:  isprivate,
+			Isblock:     isblock,
+			Isrequest:   isrequest,
 		}
 	}
 

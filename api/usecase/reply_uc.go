@@ -206,7 +206,7 @@ func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, myId 
 			return nil, err
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, tweet.Userid, myId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -296,7 +296,7 @@ func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, myId strin
 			return nil, err
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, reply.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, reply.Userid, myId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err

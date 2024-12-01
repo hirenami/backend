@@ -44,6 +44,24 @@ func (u *Usecase) CreateBlockUsecase(ctx context.Context, userId string, blockId
 		return err
 	}
 
+	err = u.dao.DeleteFollow(ctx, tx, userId, blockId)
+	if err != nil {
+		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return err
+	}
+
+	err = u.dao.DeleteFollow(ctx, tx, blockId, userId)
+	if err != nil {
+		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return err
+	}
+
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {

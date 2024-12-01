@@ -1,24 +1,24 @@
 package usecase
 
 import (
-	"context"
 	"api/model"
+	"context"
 )
 
-func (u* Usecase) CreateListingUsecase(ctx context.Context,listingId int64, userId string,content string , media_url string, listing model.Listing) error {
+func (u *Usecase) CreateListingUsecase(ctx context.Context, listingId int64, userId string, content string, media_url string, listing model.Listing) error {
 	tx, err := u.dao.Begin()
 	if err != nil {
 		return err
 	}
 
-	err = u.dao.CreateTweet(ctx, tx,userId, content, media_url)
+	err = u.dao.CreateTweet(ctx, tx, userId, content, media_url)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
 	}
 
-	tweetId , err := u.dao.GetLastInsertID(ctx, tx)
+	tweetId, err := u.dao.GetLastInsertID(ctx, tx)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
@@ -33,7 +33,7 @@ func (u* Usecase) CreateListingUsecase(ctx context.Context,listingId int64, user
 		return err
 	}
 
-	err = u.dao.UpdateReview(ctx, tx, int32(tweetId),-1)
+	err = u.dao.UpdateReview(ctx, tx, int32(tweetId), -1)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
@@ -47,21 +47,13 @@ func (u* Usecase) CreateListingUsecase(ctx context.Context,listingId int64, user
 	return nil
 }
 
-func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid int64) (model.ListingDetails, error) {
-	tx , err := u.dao.Begin()
+func (u *Usecase) GetListingUsecase(ctx context.Context, myId string, listingid int64) (model.ListingDetails, error) {
+	tx, err := u.dao.Begin()
 	if err != nil {
 		return model.ListingDetails{}, err
 	}
 
-	listing , err := u.dao.GetListing(ctx, tx, listingid)
-	if err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return model.ListingDetails{}, err
-		}
-		return model.ListingDetails{}, err
-	}
-
-	tweet , err := u.dao.GetTweet(ctx, tx, int32(listing.Tweetid))
+	listing, err := u.dao.GetListing(ctx, tx, listingid)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return model.ListingDetails{}, err
@@ -69,7 +61,15 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 		return model.ListingDetails{}, err
 	}
 
-	userIds , err := u.dao.GetPurchaseByListingId(ctx,tx, listing.Listingid)
+	tweet, err := u.dao.GetTweet(ctx, tx, int32(listing.Tweetid))
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return model.ListingDetails{}, err
+		}
+		return model.ListingDetails{}, err
+	}
+
+	userIds, err := u.dao.GetPurchaseByListingId(ctx, tx, listing.Listingid)
 	if err != nil {
 		return model.ListingDetails{}, err
 	}
@@ -112,7 +112,7 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 			}
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, userId)
+		isblocked, err := u.dao.IsBlocked(ctx, tx, userId, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return model.ListingDetails{}, err
@@ -124,6 +124,20 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 
 		isprivate := !isFollowing && user.Isprivate && !(myId == userId)
 
+		isblock, err := u.dao.IsBlocked(ctx, tx, myId, userId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
+		isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, userId, myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return model.ListingDetails{}, err
+			}
+		}
+
 		// Params構造体にデータをまとめる
 		users[i] = model.Profile{
 			User:        user,
@@ -132,7 +146,9 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 			Isfollows:   isFollowing,
 			Isfollowers: isFollower,
 			Isblocked:   isblocked,
-			Isprivate:  isprivate,
+			Isprivate:   isprivate,
+			Isblock:     isblock,
+			Isrequest:   isrequest,
 		}
 	}
 
@@ -143,25 +159,25 @@ func (u* Usecase) GetListingUsecase(ctx context.Context,myId string, listingid i
 
 	return model.ListingDetails{
 		Listing: listing,
-		User: users,
-		Tweet: tweet,
+		User:    users,
+		Tweet:   tweet,
 	}, nil
 }
 
-func (u* Usecase) GetListingByTweetUsecase(ctx context.Context, tweetid int32) (model.ListingParams, error) {
-	tx , err := u.dao.Begin()
+func (u *Usecase) GetListingByTweetUsecase(ctx context.Context, tweetid int32) (model.ListingParams, error) {
+	tx, err := u.dao.Begin()
 	if err != nil {
 		return model.ListingParams{}, err
 	}
-	listing , err := u.dao.GetListingByTweet(ctx, tx, tweetid)
+	listing, err := u.dao.GetListingByTweet(ctx, tx, tweetid)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return model.ListingParams{}, err
 		}
 		return model.ListingParams{}, err
 	}
-	
-	user , err := u.dao.GetProfile(ctx, tx, listing.Userid)
+
+	user, err := u.dao.GetProfile(ctx, tx, listing.Userid)
 	if err != nil {
 		return model.ListingParams{}, err
 	}
@@ -177,28 +193,28 @@ func (u* Usecase) GetListingByTweetUsecase(ctx context.Context, tweetid int32) (
 
 	return model.ListingParams{
 		Listing: listing,
-		User: user,
-		Tweet: tweet,
+		User:    user,
+		Tweet:   tweet,
 	}, nil
 }
 
-func (u* Usecase) GetUserListingsUsecase(ctx context.Context, userid string) ([]model.ListingParams, error) {
-	tx , err := u.dao.Begin()
+func (u *Usecase) GetUserListingsUsecase(ctx context.Context, userid string) ([]model.ListingParams, error) {
+	tx, err := u.dao.Begin()
 	if err != nil {
 		return []model.ListingParams{}, err
 	}
-	listings , err := u.dao.GetUserListings(ctx, tx, userid)
+	listings, err := u.dao.GetUserListings(ctx, tx, userid)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return []model.ListingParams{}, err
 		}
 		return []model.ListingParams{}, err
 	}
-	
+
 	var res []model.ListingParams
 
 	for _, listing := range listings {
-		user , err := u.dao.GetProfile(ctx, tx, listing.Userid)
+		user, err := u.dao.GetProfile(ctx, tx, listing.Userid)
 		if err != nil {
 			return []model.ListingParams{}, err
 		}
@@ -210,8 +226,8 @@ func (u* Usecase) GetUserListingsUsecase(ctx context.Context, userid string) ([]
 
 		res = append(res, model.ListingParams{
 			Listing: listing,
-			User: user,
-			Tweet: tweet,
+			User:    user,
+			Tweet:   tweet,
 		})
 	}
 
