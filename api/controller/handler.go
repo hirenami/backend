@@ -9,6 +9,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/import-products", controller.handleImportProducts).Methods("POST","OPTIONS")
+	r.Handle("/api/search-products/{query}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.searchProducts))).Methods("GET","OPTIONS")
 
 	r.Handle("/timeline", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetTimelineCtrl))).Methods("GET","OPTIONS")
 
