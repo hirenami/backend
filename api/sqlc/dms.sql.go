@@ -128,7 +128,6 @@ WHERE (
         senderId = ?
         AND receiverId = ?
     )
-ORDER BY createdAt DESC
 `
 
 type GetDmsParams struct {
@@ -281,25 +280,14 @@ WHERE (
         senderId = ?
         AND receiverId = ?
     )
-    OR (
-        senderId = ?
-        AND receiverId = ?
-    )
 `
 
 type SetDmStatusParams struct {
-	Senderid     string `json:"senderid"`
-	Receiverid   string `json:"receiverid"`
-	Senderid_2   string `json:"senderid_2"`
-	Receiverid_2 string `json:"receiverid_2"`
+	Senderid   string `json:"senderid"`
+	Receiverid string `json:"receiverid"`
 }
 
 func (q *Queries) SetDmStatus(ctx context.Context, arg SetDmStatusParams) error {
-	_, err := q.db.ExecContext(ctx, setDmStatus,
-		arg.Senderid,
-		arg.Receiverid,
-		arg.Senderid_2,
-		arg.Receiverid_2,
-	)
+	_, err := q.db.ExecContext(ctx, setDmStatus, arg.Senderid, arg.Receiverid)
 	return err
 }

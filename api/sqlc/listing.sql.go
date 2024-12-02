@@ -9,45 +9,74 @@ import (
 	"context"
 )
 
-const getListing = `-- name: GetListing :many
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, stock from listing
+const createListing = `-- name: CreateListing :exec
+INSERT INTO listing (listingId, userId, tweetId, listingname, listingdescription, listingprice, type, stock, ` + "`" + `condition` + "`" + `)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type CreateListingParams struct {
+	Listingid          int64  `json:"listingid"`
+	Userid             string `json:"userid"`
+	Tweetid            int32  `json:"tweetid"`
+	Listingname        string `json:"listingname"`
+	Listingdescription string `json:"listingdescription"`
+	Listingprice       int32  `json:"listingprice"`
+	Type               string `json:"type"`
+	Stock              int32  `json:"stock"`
+	Condition          string `json:"condition"`
+}
+
+func (q *Queries) CreateListing(ctx context.Context, arg CreateListingParams) error {
+	_, err := q.db.ExecContext(ctx, createListing,
+		arg.Listingid,
+		arg.Userid,
+		arg.Tweetid,
+		arg.Listingname,
+		arg.Listingdescription,
+		arg.Listingprice,
+		arg.Type,
+		arg.Stock,
+		arg.Condition,
+	)
+	return err
+}
+
+const deleteStock = `-- name: DeleteStock :exec
+UPDATE listing
+SET stock = stock - 1
 WHERE listingId = ?
 `
 
-func (q *Queries) GetListing(ctx context.Context, listingid int32) ([]Listing, error) {
-	rows, err := q.db.QueryContext(ctx, getListing, listingid)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Listing{}
-	for rows.Next() {
-		var i Listing
-		if err := rows.Scan(
-			&i.Listingid,
-			&i.Userid,
-			&i.Tweetid,
-			&i.CreatedAt,
-			&i.Listingname,
-			&i.Listingdescription,
-			&i.Listingprice,
-			&i.Stock,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) DeleteStock(ctx context.Context, listingid int64) error {
+	_, err := q.db.ExecContext(ctx, deleteStock, listingid)
+	return err
+}
+
+const getListing = `-- name: GetListing :one
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
+WHERE listingId = ?
+`
+
+func (q *Queries) GetListing(ctx context.Context, listingid int64) (Listing, error) {
+	row := q.db.QueryRowContext(ctx, getListing, listingid)
+	var i Listing
+	err := row.Scan(
+		&i.Listingid,
+		&i.Userid,
+		&i.Tweetid,
+		&i.CreatedAt,
+		&i.Listingname,
+		&i.Listingdescription,
+		&i.Condition,
+		&i.Listingprice,
+		&i.Type,
+		&i.Stock,
+	)
+	return i, err
 }
 
 const getListingByTweet = `-- name: GetListingByTweet :one
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, stock from listing
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE tweetId = ?
 `
 
@@ -61,14 +90,16 @@ func (q *Queries) GetListingByTweet(ctx context.Context, tweetid int32) (Listing
 		&i.CreatedAt,
 		&i.Listingname,
 		&i.Listingdescription,
+		&i.Condition,
 		&i.Listingprice,
+		&i.Type,
 		&i.Stock,
 	)
 	return i, err
 }
 
 const getUserListings = `-- name: GetUserListings :many
-SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, listingprice, stock from listing
+SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE userId = ?
 `
 
@@ -88,7 +119,9 @@ func (q *Queries) GetUserListings(ctx context.Context, userid string) ([]Listing
 			&i.CreatedAt,
 			&i.Listingname,
 			&i.Listingdescription,
+			&i.Condition,
 			&i.Listingprice,
+			&i.Type,
 			&i.Stock,
 		); err != nil {
 			return nil, err

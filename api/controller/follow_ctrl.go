@@ -10,14 +10,6 @@ import (
 
 // POST /follow/{userId}
 func (c *Controller) CreateFollowCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -51,14 +43,6 @@ func (c *Controller) CreateFollowCtrl(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /follow/{userId}
 func (c *Controller) DeleteFollowCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -83,14 +67,6 @@ func (c *Controller) DeleteFollowCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /follow/{userId}/following
 func (c *Controller) GetFollowingCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
@@ -124,14 +100,6 @@ func (c *Controller) GetFollowingCtrl(w http.ResponseWriter, r *http.Request) {
 
 // GET /follow/{userId}/follower
 func (c *Controller) GetFollowerCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)

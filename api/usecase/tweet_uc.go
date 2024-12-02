@@ -110,7 +110,6 @@ func (u *Usecase) EraseTweetUsecase(ctx context.Context, myId string, tweetId in
 		}
 		return err
 	}
-
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
@@ -139,11 +138,8 @@ func (u *Usecase) EditTweetUsecase(ctx context.Context, myId string, tweetId int
 	}
 
 	//バリデーション
-	if content == "" {
+	if content == "" && media_url == "" {
 		return errors.New("content is empty")
-	}
-	if len(content) > 140 {
-		return errors.New("content is too long")
 	}
 	if media_url != "" && len(media_url) > 255 {
 		return errors.New("media_url is too long")
@@ -221,24 +217,6 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 		return nil, errors.New("user does not exist")
 	}
 
-	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, userId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	isfollowing , err := u.dao.IsFollowing(ctx, tx, userId,myId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	user , err := u.dao.GetProfile(ctx, tx, userId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	isprivate := !isfollowing && user.Isprivate 
-
-
 	// ユーザーのツイートを取得
 	tweets, err := u.dao.GetUsersTweet(ctx, tx, userId)
 	if err != nil {
@@ -249,44 +227,15 @@ func (u *Usecase) GetUsersTweetUsecase(ctx context.Context, userId string, myId 
 	}
 
 	// 結果を格納するためのスライス
-	tweetParamsList := make([]model.TweetParams, len(tweets))
+	var tweetParamsList []model.TweetParams
 
-	for i, tweet := range tweets {
-		// ユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+	for _, tweet := range tweets {
+		tweetParams, err := u.GetTweetParamsUsecase(ctx,tx, myId,int32(tweet.Tweetid))
 		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
 			return nil, err
 		}
-
-		// ツイートが「いいね」されているか確認
-		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// ツイートがリツイートされているか確認
-		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
-			}
-			return nil, err
-		}
-
-		// TweetParams構造体にデータをまとめる
-		tweetParamsList[i] = model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
+		if tweetParams != (model.TweetParams{}) {
+			tweetParamsList = append(tweetParamsList, tweetParams)
 		}
 
 		//impressionをインクリメント
@@ -341,7 +290,7 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
         return model.TweetParams{}, err
     }
 
-	isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
+	isblocked , err := u.dao.IsBlocked(ctx, tx,tweet.Userid, myId)
 	if err != nil {
 		tx.Rollback()
 		return model.TweetParams{}, err
@@ -353,7 +302,7 @@ func (u *Usecase) GetTweetUsecase(ctx context.Context, tweetId int32, myId strin
 		tx.Rollback()
 		return model.TweetParams{}, err
 	}
-	isprivate := !isfollowing && user.Isprivate
+	isprivate := !isfollowing && user.Isprivate && !(myId == user.Userid)
 
 	//impressionをインクリメント
 	err = u.dao.PlusImpression(ctx, tx, tweet.Tweetid)

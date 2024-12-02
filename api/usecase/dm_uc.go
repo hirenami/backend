@@ -1,11 +1,11 @@
 package usecase
 
 import (
+	"api/model"
 	"api/sqlc"
 	"context"
 	"errors"
 	"log"
-	"api/model"
 )
 
 // Usecase メソッドの実装
@@ -38,6 +38,17 @@ func (u *Usecase) CreateDm(ctx context.Context, userId, repid, content, media_ur
 		return err
 	}
 
+	if content != "" || media_url != "" {
+		err = u.dao.CreateNotification(ctx, tx, userId, repid, "dm", 0)
+		if err != nil {
+			// エラーが発生した場合、ロールバック
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return err
+		}
+	}
+
 	// トランザクションをコミット
 	err = tx.Commit()
 	if err != nil {
@@ -63,9 +74,17 @@ func (u *Usecase) GetDms(ctx context.Context, userId, repid string) ([]sqlc.Dm, 
 	}
 
 	// daoのメソッドにトランザクションを渡して実行
-	dm, err := u.dao.GetDms(ctx, tx, userId, repid)
+	dms, err := u.dao.GetDms(ctx, tx, userId, repid)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+		}
+		return nil, err
+	}
+
+	err = u.dao.SetDmStatus(ctx, tx, repid, userId)
+	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 		}
@@ -78,7 +97,7 @@ func (u *Usecase) GetDms(ctx context.Context, userId, repid string) ([]sqlc.Dm, 
 		return nil, err
 	}
 
-	return dm, nil
+	return dms, nil
 }
 
 // Usecase メソッドの実装
@@ -109,7 +128,7 @@ func (u *Usecase) DeleteDm(ctx context.Context, dmsid int32) error {
 	return err
 }
 
-func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.Conversation, error) {
+func (u *Usecase) GetAllDms(ctx context.Context, myId string) ([]model.Conversation, error) {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -131,7 +150,7 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 	}
 
 	// 他ユーザーごとにメッセージを整理
-	conversations := make(map[string]model.Conversation)
+	conversationMap := make(map[string]model.Conversation)
 	for _, dm := range dms {
 		// 自分以外のユーザー ID を特定
 		partnerId := dm.Senderid
@@ -139,13 +158,21 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 			partnerId = dm.Receiverid
 		}
 
+		// ユーザー情報を取得
 		user, err := u.dao.GetProfile(ctx, tx, partnerId)
 		if err != nil {
 			return nil, err
 		}
 
+		bool, err := u.dao.IsBlocked(ctx, tx, partnerId, myId)
+		if err != nil {
+			return nil, err
+		} else if bool {
+			continue
+		}
+
 		// 既存のデータを取得、なければ新規作成
-		conv, exists := conversations[partnerId]
+		conv, exists := conversationMap[partnerId]
 		if !exists {
 			conv = model.Conversation{
 				User: user,
@@ -155,13 +182,18 @@ func (u *Usecase) GetAllDms(ctx context.Context, myId string) (map[string]model.
 
 		// DM を追加
 		conv.Dms = append(conv.Dms, dm)
-		conversations[partnerId] = conv
-		
+		conversationMap[partnerId] = conv
 	}
 
 	// トランザクションをコミット
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	// マップからスライスに変換
+	var conversations []model.Conversation
+	for _, conv := range conversationMap {
+		conversations = append(conversations, conv)
 	}
 
 	return conversations, nil

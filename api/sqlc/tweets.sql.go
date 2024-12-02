@@ -225,7 +225,7 @@ func (q *Queries) GetTweet(ctx context.Context, tweetid int32) (Tweet, error) {
 
 const getTweetId = `-- name: GetTweetId :one
 SELECT tweetId FROM tweets
-WHERE retweetId = ? and userId = ? and isDeleted = false
+WHERE retweetId = ? and userId = ? and isDeleted = false and isQuote = false
 `
 
 type GetTweetIdParams struct {
@@ -300,7 +300,7 @@ const isRetweet = `-- name: IsRetweet :one
 SELECT EXISTS (
 	SELECT 1 
 	FROM tweets 
-	WHERE retweetId = ? and isDeleted = false and userId = ?
+	WHERE retweetId = ? and isDeleted = false and userId = ? and isQuote = false
 )
 `
 
@@ -350,5 +350,21 @@ WHERE tweetId = ?
 
 func (q *Queries) PlusRetweet(ctx context.Context, tweetid int32) error {
 	_, err := q.db.ExecContext(ctx, plusRetweet, tweetid)
+	return err
+}
+
+const updateReview = `-- name: UpdateReview :exec
+UPDATE tweets
+SET review = ?
+WHERE tweetId = ?
+`
+
+type UpdateReviewParams struct {
+	Review  int32 `json:"review"`
+	Tweetid int32 `json:"tweetid"`
+}
+
+func (q *Queries) UpdateReview(ctx context.Context, arg UpdateReviewParams) error {
+	_, err := q.db.ExecContext(ctx, updateReview, arg.Review, arg.Tweetid)
 	return err
 }

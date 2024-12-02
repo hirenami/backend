@@ -9,7 +9,7 @@ import (
 )
 
 // Usecase メソッドの実装
-func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media_url string, tweetId int32) error {
+func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media_url string,review, tweetId int32) error {
 	// トランザクションを開始
 	tx, err := u.dao.Begin()
 	if err != nil {
@@ -35,7 +35,7 @@ func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media
 	}
 
 	//Daoのメソッドを呼び出し
-	err = u.dao.CreateReply(ctx, tx, userId, content, media_url)
+	err = u.dao.CreateReply(ctx, tx, userId, content, media_url, review)
 	if err != nil {
 		// エラーが発生した場合、ロールバック
 		if rbErr := tx.Rollback(); rbErr != nil {
@@ -189,48 +189,14 @@ func (u *Usecase) GetUsersReplyUsecase(ctx context.Context, userId string, myId 
 	var tweetParamsList []model.TweetParams
 
 	for _, tweet := range tweets {
-		// ツイート投稿者のユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		// リプライツイートを取得
+		reply ,err := u.GetTweetParamsUsecase(ctx, tx, myId, tweet.Tweetid)
 		if err != nil {
 			return nil, err
 		}
-
-		// いいねとリツイート情報を取得
-		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			return nil, err
+		if(reply!=model.TweetParams{}){
+		tweetParamsList = append(tweetParamsList, reply)
 		}
-
-		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid,myId)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isprivate := !isfollowing && user.Isprivate 
-
-		if isblocked || isprivate || tweet.Isdeleted {
-			continue
-		}
-
-		// TweetParamsに情報を詰めてリストに追加
-		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
-		})
 	}
 
 	// トランザクションをコミット
@@ -274,53 +240,13 @@ func (u *Usecase) GetReplyUsecase(ctx context.Context, tweetId int32, myId strin
 
 	for _, tweet := range tweets {
 		// リプライツイートを取得
-		reply, err := u.dao.GetTweet(ctx, tx, tweet)
+		reply ,err := u.GetTweetParamsUsecase(ctx, tx, myId, tweet)
 		if err != nil {
 			return nil, err
 		}
-
-		// ツイート投稿者のユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, reply.Userid)
-		if err != nil {
-			return nil, err
+		if(reply!=model.TweetParams{}){
+		tweetParamsList = append(tweetParamsList, reply)
 		}
-
-		// いいねとリツイート情報を取得
-		liked, err := u.dao.IsLiked(ctx, tx, myId, tweet)
-		if err != nil {
-			return nil, err
-		}
-
-		retweeted, err := u.dao.IsRetweet(ctx, tx, myId, tweet)
-		if err != nil {
-			return nil, err
-		}
-
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, reply.Userid)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isfollowing , err := u.dao.IsFollowing(ctx, tx,reply.Userid,myId)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isprivate := !isfollowing && user.Isprivate
-
-		if isblocked || isprivate || reply.Isdeleted {
-			continue
-		}
-
-		// TweetParamsに情報を詰めてリストに追加
-		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:    reply,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
-		})
 	}
 
 	// トランザクションをコミット
@@ -386,40 +312,17 @@ func (u *Usecase) GetTweetRepliedToUsecase(ctx context.Context, Id string, reply
 
 	// TweetParamsにまとめるためのリストを準備
 	var tweetParamsList []model.TweetParams
-	users := make([]sqlc.User, len(tweets))
-	liked := make([]bool, len(tweets))
-	retweeted := make([]bool, len(tweets))
+	
 
 	// ツイートごとにユーザー、いいね、リツイート情報を取得
-	for i, tweet := range tweets {
-		// ツイートの投稿者情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+	for _, tweet := range tweets {
+		tweetParam, err := u.GetTweetParamsUsecase(ctx, tx, Id, tweet.Tweetid)
 		if err != nil {
 			return nil, err
 		}
-		users[i] = user
-
-		// いいね情報を取得
-		isLiked, err := u.dao.IsLiked(ctx, tx, Id, tweet.Tweetid)
-		if err != nil {
-			return nil, err
+		if(tweetParam!=model.TweetParams{}){
+		tweetParamsList = append(tweetParamsList, tweetParam)
 		}
-		liked[i] = isLiked
-
-		// リツイート情報を取得
-		isRetweeted, err := u.dao.IsRetweet(ctx, tx, Id, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-		retweeted[i] = isRetweeted
-
-		// TweetParamsとしてまとめる
-		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    isLiked,
-			Retweets: isRetweeted,
-		})
 	}
 
 	// トランザクションをコミット

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"encoding/json"
 )
 
 func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
@@ -49,9 +50,15 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Verified Userid token: %v\n", idToken)
 	log.Printf("User Userid: %v\n", token.UID)
 
+	Id, err := c.Usecase.GetIdByUID(ctx, token.UID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// ここでDB処理や他のアクションを行う
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User authenticated"))
+	json.NewEncoder(w).Encode(Id)
 
 }
 

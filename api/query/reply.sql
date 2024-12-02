@@ -1,8 +1,8 @@
 -- name: CreateReply :exec
 INSERT INTO tweets (
-	userId, isReply, content, media_url
+	userId, isReply, content, media_url, review
 ) VALUES (
-	?, true, ?, ?
+	?, true, ?, ?, ?
 );
 
 -- name: GetLastInsertID :one
@@ -10,7 +10,7 @@ SELECT LAST_INSERT_ID() AS tweetId;
 
 -- name: GetUsersReplies :many
 SELECT * FROM tweets 
-WHERE userId = ? and isReply = true ORDER BY createdAt DESC;
+WHERE userId = ? and isReply = true ORDER BY created_at DESC;
 
 -- name: RelateReplyToTweet :exec
 INSERT INTO relations (

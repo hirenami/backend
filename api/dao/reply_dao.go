@@ -6,14 +6,15 @@ import (
 	"database/sql"
 )
 
-func (d *Dao) CreateReply(ctx context.Context, tx *sql.Tx, userId, content, mediaUrl string) error {
+func (d *Dao) CreateReply(ctx context.Context, tx *sql.Tx, userId, content, mediaUrl string, review int32) error {
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
 	args := sqlc.CreateReplyParams{
-		Userid:       userId,
+		Userid:   userId,
 		Content:  content,
 		MediaUrl: mediaUrl,
+		Review:   review,
 	}
 	return txQueries.CreateReply(ctx, args)
 }

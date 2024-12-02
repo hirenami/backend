@@ -14,7 +14,7 @@ SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated
 WHERE userId IN (
 	SELECT followerId FROM follows
 	WHERE followingId = ?
-) AND isDeleted = false ORDER BY created_at DESC
+) AND isDeleted = false AND isReply = false ORDER BY created_at DESC
 `
 
 func (q *Queries) Timeline(ctx context.Context, followingid string) ([]Tweet, error) {

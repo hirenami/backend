@@ -5,19 +5,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"api/model"
 )
 
 // POST /user/create
 func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
-	req := User{}
+	req := model.User{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -45,14 +38,6 @@ func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 // PUT /user/edit
 func (c *Controller) UpdateProfileCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)
@@ -62,7 +47,7 @@ func (c *Controller) UpdateProfileCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("User Userid: ", userId)
 
-	req := User{}
+	req := model.User{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -78,14 +63,6 @@ func (c *Controller) UpdateProfileCtrl(w http.ResponseWriter, r *http.Request) {
 
 // PATCH /user/delete
 func (c *Controller) DeleteAccountCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	userId := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 
@@ -101,14 +78,6 @@ func (c *Controller) DeleteAccountCtrl(w http.ResponseWriter, r *http.Request) {
 //PUT /user/isprivate
 
 func (c *Controller) ChangePrivacyCtrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		setCORSHeaders(w)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	setCORSHeaders(w)
-
 	uid := r.Context().Value(uidKey).(string)
 	ctx := context.Background()
 	userId,err := c.Usecase.GetIdByUID(ctx,uid)

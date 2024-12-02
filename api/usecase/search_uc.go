@@ -38,48 +38,13 @@ func (u *Usecase) SearchByKeywordUsecase(ctx context.Context,myId, keyword strin
 	var tweetParamsList []model.TweetParams
 
 	for _, tweet := range tweets {
-		// ユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		tweetParams, err := u.GetTweetParamsUsecase(ctx, tx, myId, tweet.Tweetid)
 		if err != nil {
 			return nil, err
 		}
-
-		// いいねとリツイート情報を取得
-		liked, err := u.dao.IsLiked(ctx, tx, tweet.Userid, tweet.Tweetid)
-		if err != nil {
-			return nil, err
+		if(tweetParams!=model.TweetParams{}){
+			tweetParamsList = append(tweetParamsList, tweetParams)
 		}
-
-		retweeted, err := u.dao.IsRetweet(ctx, tx, tweet.Userid, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, tweet.Userid)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid,myId)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		isprivate := !isfollowing && user.Isprivate 
-
-		if isblocked || isprivate || tweet.Isdeleted {
-			continue
-		}
-
-		// TweetParamsに追加
-		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
-		})
 	}
 
 	// トランザクションをコミット
@@ -146,13 +111,32 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			}
 		}
 
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
+		isblocked , err := u.dao.IsBlocked(ctx, tx, user.Userid, myId)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return nil, err
 			}
 		}
-		isprivate := !isFollowing && user.Isprivate
+
+		if(isblocked){
+			continue
+		}
+
+		isprivate := !isFollowing && user.Isprivate && !(myId == user.Userid)
+
+		isblock, err := u.dao.IsBlocked(ctx, tx, myId,user.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
+
+		isrequest, err := u.dao.IsKeyFollowExists(ctx, tx, user.Userid,myId)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return nil, err
+			}
+		}
 
 		// Params構造体にデータをまとめる
 		UserParamsList[i] = model.Profile{
@@ -163,6 +147,8 @@ func (u *Usecase) SearchByUserUsecase(ctx context.Context, myId, keyword string)
 			Isfollowers: isFollower,
 			Isblocked:   isblocked,
 			Isprivate:   isprivate,
+			Isblock:     isblock,
+			Isrequest:   isrequest,
 		}
 	}
 
@@ -206,50 +192,13 @@ func (u *Usecase) SearchByHashtagUsecase(ctx context.Context, myId,keyword strin
 	var tweetParamsList []model.TweetParams
 
 	for _, tweet := range tweets {
-		// ユーザー情報を取得
-		user, err := u.dao.GetProfile(ctx, tx, tweet.Userid)
+		tweetParams, err := u.GetTweetParamsUsecase(ctx, tx, myId, tweet.Tweetid)
 		if err != nil {
 			return nil, err
 		}
-
-		// いいねとリツイート情報を取得
-		liked, err := u.dao.IsLiked(ctx, tx, tweet.Userid, tweet.Tweetid)
-		if err != nil {
-			return nil, err
+		if(tweetParams!=model.TweetParams{}){
+			tweetParamsList = append(tweetParamsList, tweetParams)
 		}
-
-		retweeted, err := u.dao.IsRetweet(ctx, tx, tweet.Userid, tweet.Tweetid)
-		if err != nil {
-			return nil, err
-		}
-
-		isblocked , err := u.dao.IsBlocked(ctx, tx, myId, user.Userid)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				return nil, err
-			}
-		}
-		isfollowing , err := u.dao.IsFollowing(ctx, tx, tweet.Userid, myId)
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				return nil, err
-			}
-		}
-		isprivate := !isfollowing && user.Isprivate
-
-		if isblocked || isprivate || tweet.Isdeleted {
-			continue
-		}
-
-		// TweetParamsに追加
-		tweetParamsList = append(tweetParamsList, model.TweetParams{
-			Tweet:    tweet,
-			User:     user,
-			Likes:    liked,
-			Retweets: retweeted,
-			Isblocked: isblocked,
-			Isprivate: isprivate,
-		})
 	}
 
 	// トランザクションをコミット

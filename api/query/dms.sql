@@ -21,8 +21,7 @@ WHERE (
     OR (
         senderId = ?
         AND receiverId = ?
-    )
-ORDER BY createdAt DESC;
+    );
 
 -- name: GetLastMessages :many
 SELECT *
@@ -57,10 +56,6 @@ UPDATE dms
 SET
     status = 'read'
 WHERE (
-        senderId = ?
-        AND receiverId = ?
-    )
-    OR (
         senderId = ?
         AND receiverId = ?
     );
