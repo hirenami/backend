@@ -13,17 +13,17 @@ import (
 
 func (u *Usecase) Initializing() *firebase.App {
 
-	typeEnv := os.Getenv("_TYPE")
-	projectID := os.Getenv("_PROJECT_ID")
-	privateKeyID := os.Getenv("_PRIVATE_KEY_ID")
-	privateKey := os.Getenv("_PRIVATE_KEY")
-	clientEmail := os.Getenv("_CLIENT_EMAIL")
-	clientID := os.Getenv("_CLIENT_ID")
-	authURI := os.Getenv("_AUTH_URI")
-	tokenURI := os.Getenv("_TOKEN_URI")
-	authProviderCertURL := os.Getenv("_AUTH_PROVIDER_X509_CERT_URL")
-	clientCertURL := os.Getenv("_CLIENT_X509_CERT_URL")
-	universe_domain := os.Getenv("_UNIVERSE_DOMAIN")
+	typeEnv := os.Getenv("TYPE")
+	projectID := os.Getenv("PROJECT_ID")
+	privateKeyID := os.Getenv("PRIVATE_KEY_ID")
+	privateKey := os.Getenv("PRIVATE_KEY")
+	clientEmail := os.Getenv("CLIENT_EMAIL")
+	clientID := os.Getenv("CLIENT_ID")
+	authURI := os.Getenv("AUTH_URI")
+	tokenURI := os.Getenv("TOKEN_URI")
+	authProviderCertURL := os.Getenv("AUTH_PROVIDER_X509_CERT_URL")
+	clientCertURL := os.Getenv("CLIENT_X509_CERT_URL")
+	universe_domain := os.Getenv("UNIVERSE_DOMAIN")
 
 	log.Println("typeEnv: ", typeEnv)
 	log.Println("projectID: ", projectID)
