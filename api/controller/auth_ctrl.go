@@ -95,16 +95,16 @@ func (c *Controller) FirebaseAuthMiddleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			// トークンの検証
-			// token, err := client.VerifyIDToken(ctx, idToken)
-			// if err != nil {
-			// 	log.Printf("Invalid idToken: %s, Error: %v", idToken, err)
-			// 	http.Error(w, "Invalid token", http.StatusUnauthorized)
-			// 	return
-			// }
+			//トークンの検証
+			token, err := client.VerifyIDToken(ctx, idToken)
+			if err != nil {
+				log.Printf("Invalid idToken: %s, Error: %v", idToken, err)
+				http.Error(w, "Invalid token", http.StatusUnauthorized)
+				return
+			}
 
-			// // UIDをコンテキストに追加
-			// ctx = context.WithValue(ctx, uidKey, token.UID)
+			// UIDをコンテキストに追加
+			ctx = context.WithValue(ctx, uidKey, token.UID)
 
 			// 次のハンドラーを呼び出す
 			next.ServeHTTP(w, r.WithContext(ctx))
