@@ -13,12 +13,30 @@ const timeline = `-- name: Timeline :many
 SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets
 WHERE userId IN (
 	SELECT followerId FROM follows
-	WHERE followingId = ?
-) AND isDeleted = false AND isReply = false ORDER BY created_at DESC
+	WHERE follows.followingId = ?
+) AND isDeleted = false AND isReply = false
+UNION ALL
+SELECT tweetid, userid, retweetid, isquote, isreply, review, created_at, updated_at, content, media_url, likes, retweets, replies, impressions, isdeleted FROM tweets 
+WHERE 
+    isDeleted = FALSE
+	AND isReply = FALSE
+    AND created_at >= NOW() - INTERVAL 5 DAY
+    AND userId NOT IN (
+        SELECT followerId FROM follows WHERE follows.followingId = ?
+    )
+ORDER BY 
+    likes + 2 * retweets DESC, 
+    created_at DESC
+LIMIT 100
 `
 
-func (q *Queries) Timeline(ctx context.Context, followingid string) ([]Tweet, error) {
-	rows, err := q.db.QueryContext(ctx, timeline, followingid)
+type TimelineParams struct {
+	Followingid   string `json:"followingid"`
+	Followingid_2 string `json:"followingid_2"`
+}
+
+func (q *Queries) Timeline(ctx context.Context, arg TimelineParams) ([]Tweet, error) {
+	rows, err := q.db.QueryContext(ctx, timeline, arg.Followingid, arg.Followingid_2)
 	if err != nil {
 		return nil, err
 	}
