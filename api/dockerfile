@@ -22,7 +22,7 @@ FROM debian:stable-slim as app
 
 WORKDIR /app 
 
-RUN apt-get install -y ca-certificates openssl
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates openssl && apt-get clean
 
 # ビルド成果物をコピー
 COPY --from=build /main /app/
