@@ -8,6 +8,15 @@ import (
 
 // GET /timeline
 func (c *Controller) GetTimelineCtrl(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodOptions {
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	setCORSHeaders(w)
+	
 	firebaseUid, ok := r.Context().Value(uidKey).(string)
 	if !ok {
 		http.Error(w, "Userid not found in context", http.StatusUnauthorized)
