@@ -23,7 +23,8 @@ const (
 )
 
 func setCORSHeaders(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "https://hackathon-theta-topaz.vercel.app")
+	// w.Header().Set("Access-Control-Allow-Origin", "https://hackathon-theta-topaz.vercel.app")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, PATCH, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
