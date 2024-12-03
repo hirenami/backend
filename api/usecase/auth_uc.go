@@ -66,3 +66,4 @@ func (u *Usecase) Initializing() *firebase.App {
 	return app
 }
 
+
