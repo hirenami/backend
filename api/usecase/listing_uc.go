@@ -3,6 +3,7 @@ package usecase
 import (
 	"api/model"
 	"context"
+	"log"
 )
 
 func (u *Usecase) CreateListingUsecase(ctx context.Context, listingId int64, userId string, content string, media_url string, listing model.Listing) error {
@@ -13,20 +14,27 @@ func (u *Usecase) CreateListingUsecase(ctx context.Context, listingId int64, use
 
 	err = u.dao.CreateTweet(ctx, tx, userId, content, media_url)
 	if err != nil {
+		log.Println("userId: ", userId)
+		log.Println("content" , content)
+		log.Println("media_url", media_url)
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
+		return err
 	}
 
 	tweetId, err := u.dao.GetLastInsertID(ctx, tx)
 	if err != nil {
+		log.Println("tweet created2")
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
+		return err
 	}
 
 	err = u.dao.CreateListing(ctx, tx, listingId, userId, int32(tweetId), listing.Listingname, listing.Listingdescription, listing.Listingprice, listing.Type, listing.Stock, listing.Condition)
 	if err != nil {
+		log.Println("tweet created3")
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
@@ -35,9 +43,11 @@ func (u *Usecase) CreateListingUsecase(ctx context.Context, listingId int64, use
 
 	err = u.dao.UpdateReview(ctx, tx, int32(tweetId), -1)
 	if err != nil {
+		log.Println("tweet created4")
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return err
 		}
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {

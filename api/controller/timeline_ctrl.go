@@ -20,7 +20,7 @@ func (c *Controller) GetTimelineCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tweetparams, err  := c.Usecase.GetTimelineUsecase(ctx, userId)
+	tweetparams, err := c.Usecase.GetTimelineUsecase(ctx, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

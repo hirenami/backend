@@ -95,7 +95,7 @@ func (c *Controller) FirebaseAuthMiddleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			// トークンの検証
+			//トークンの検証
 			token, err := client.VerifyIDToken(ctx, idToken)
 			if err != nil {
 				log.Printf("Invalid idToken: %s, Error: %v", idToken, err)

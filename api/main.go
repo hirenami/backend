@@ -11,30 +11,29 @@ import (
 	"net/http"
 	"os"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
-func envload() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-}
-
 func main() {
-	envload()
+	//envload()
 	mysqlUser := os.Getenv("MYSQL_USER")
 	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
+	mysqlHost := os.Getenv("MYSQL_HOST")
+	
 	if mysqlUser == "" || mysqlUserPwd == "" || mysqlDatabase == "" {
 		log.Fatal("fail :Getenv")
 	}
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@(localhost:3308)/%s?parseTime=true", mysqlUser, mysqlUserPwd, mysqlDatabase))
 
+	// MySQL用のDSNを作成
+	dsn := fmt.Sprintf("%s:%s@unix(/cloudsql/%s)/%s?parseTime=true",
+		mysqlUser, mysqlUserPwd, mysqlHost, mysqlDatabase)
+
+	// データベース接続
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatalf("fail: sql.Open, %v\n", err)
+		log.Fatalf("Failed to open database: %v", err)
 	}
+
 	if err := db.Ping(); err != nil {
 		log.Fatalf("fail: db.Ping, %v\n", err)
 	}
@@ -53,6 +52,3 @@ func main() {
 	}
 
 }
-
-
-
