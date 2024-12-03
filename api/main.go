@@ -9,15 +9,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
 	//envload()
-	mysqlUser := "user"
-	mysqlUserPwd := "fnkpVJP9"
-	mysqlDatabase := "hackathon"
-    mysqlHost := "term6-namito-hirezaki:us-central1:uttc"
+	mysqlUser := os.Getenv("MYSQL_USER")
+	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
+	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
+	mysqlHost := os.Getenv("MYSQL_HOST")
+	
+	if mysqlUser == "" || mysqlUserPwd == "" || mysqlDatabase == "" {
+		log.Fatal("fail :Getenv")
+	}
 
 	// MySQL用のDSNを作成
 	dsn := fmt.Sprintf("%s:%s@unix(/cloudsql/%s)/%s?parseTime=true",
