@@ -22,6 +22,8 @@ FROM debian:stable-slim as app
 
 WORKDIR /app 
 
+RUN apt-get install -y ca-certificates openssl
+
 # ビルド成果物をコピー
 COPY --from=build /main /app/
 
