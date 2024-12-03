@@ -81,6 +81,7 @@ func (c *Controller) FirebaseAuthMiddleware() func(http.Handler) http.Handler {
 
 			if err != nil {
 				http.Error(w, "Firebase auth initialization error", http.StatusInternalServerError)
+				log.Printf("Firebase auth initialization error: %v", err)
 				return
 			}
 

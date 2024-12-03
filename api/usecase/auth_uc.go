@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
-	firebase "firebase.google.com/go"
-	"google.golang.org/api/option"
+	"encoding/json"
 	"log"
 	"os"
-	"encoding/json"
+	"strings"
+
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 )
 
 
@@ -26,8 +28,11 @@ func (u *Usecase) Initializing() *firebase.App {
 
 	// 必要な情報がすべて環境変数から取得できたかを確認
 	if typeEnv == "" || projectID == "" || privateKeyID == "" || privateKey == "" || clientEmail == ""  || clientID == "" || authURI == "" || tokenURI == "" || authProviderCertURL == "" || clientCertURL == "" || universe_domain == "" {
-		log.Fatal("Required environment variables are missing.")
+		log.Println("Required environment variables are missing.")
 	}
+
+	// 秘密鍵を実際の改行文字に変換
+	privateKey = strings.ReplaceAll(privateKey, "\\n", "\n")
 
 	// JSON構造体を作成
 	serviceAccount := map[string]interface{}{
@@ -47,14 +52,17 @@ func (u *Usecase) Initializing() *firebase.App {
 	// JSONにエンコード
 	serviceAccountJSON, err := json.Marshal(serviceAccount)
 	if err != nil {
-		log.Fatalf("Failed to marshal service account JSON: %v", err)
+		log.Printf("Failed to marshal service account JSON: %v", err)
+		log.Println("error")
 	}
 
 	ctx := context.Background()
 	opt := option.WithCredentialsJSON(serviceAccountJSON)
+	
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		log.Fatalf("error initializing app: %v\n", err)
+		log.Printf("error initializing app: %v\n", err)
+		log.Println("error2")
 	}
 	return app
 }
