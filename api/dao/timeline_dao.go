@@ -10,7 +10,12 @@ func (d *Dao) Timeline(ctx context.Context, tx *sql.Tx, followingid string) ([]s
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
 
-	return txQueries.Timeline(ctx, followingid)
+	args := sqlc.TimelineParams{
+		Followingid: followingid,
+		Followingid_2: followingid,
+	}
+
+	return txQueries.Timeline(ctx, args)
 }
 
 // おすすめツイートも実装予定
