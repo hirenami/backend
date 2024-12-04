@@ -18,3 +18,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 UPDATE listing
 SET stock = stock - 1
 WHERE listingId = ?;
+
+-- name: UpdateListing :exec
+UPDATE users
+SET listingnum = listingnum + 1
+WHERE userId = ?;

@@ -51,4 +51,10 @@ func (d *Dao) DeleteStock (ctx context.Context,tx *sql.Tx, listingid int64) erro
 	return txQueries.DeleteStock(ctx, listingid)
 }
 
+func (d *Dao) UpdateListing (ctx context.Context,tx *sql.Tx, userId string) error {
+	
+	txQueries := d.WithTx(tx)
+
+	return txQueries.UpdateListing(ctx, userId)
+}
 

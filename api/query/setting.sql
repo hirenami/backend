@@ -6,11 +6,6 @@ UPDATE users
 SET isPrivate = ?
 WHERE userId = ?;
 
--- name: CreateIsDeleted :exec
-UPDATE users
-SET isDeleted = ?
-WHERE userId = ?;
-
 -- name: CreateIsAdmin :exec
 UPDATE users
 SET isAdmin = ?

@@ -40,22 +40,6 @@ func (q *Queries) CreateIsAdmin(ctx context.Context, arg CreateIsAdminParams) er
 	return err
 }
 
-const createIsDeleted = `-- name: CreateIsDeleted :exec
-UPDATE users
-SET isDeleted = ?
-WHERE userId = ?
-`
-
-type CreateIsDeletedParams struct {
-	Isdeleted bool   `json:"isdeleted"`
-	Userid    string `json:"userid"`
-}
-
-func (q *Queries) CreateIsDeleted(ctx context.Context, arg CreateIsDeletedParams) error {
-	_, err := q.db.ExecContext(ctx, createIsDeleted, arg.Isdeleted, arg.Userid)
-	return err
-}
-
 const createIsPremium = `-- name: CreateIsPremium :exec
 UPDATE users
 SET isPremium = true

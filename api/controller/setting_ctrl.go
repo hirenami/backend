@@ -61,20 +61,6 @@ func (c *Controller) UpdateProfileCtrl(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// PATCH /user/delete
-func (c *Controller) DeleteAccountCtrl(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value(uidKey).(string)
-	ctx := context.Background()
-
-	err := c.Usecase.DeleteAccount(ctx, userId)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
 //PUT /user/isprivate
 
 func (c *Controller) ChangePrivacyCtrl(w http.ResponseWriter, r *http.Request) {

@@ -136,3 +136,14 @@ func (q *Queries) GetUserListings(ctx context.Context, userid string) ([]Listing
 	}
 	return items, nil
 }
+
+const updateListing = `-- name: UpdateListing :exec
+UPDATE users
+SET listingnum = listingnum + 1
+WHERE userId = ?
+`
+
+func (q *Queries) UpdateListing(ctx context.Context, userid string) error {
+	_, err := q.db.ExecContext(ctx, updateListing, userid)
+	return err
+}

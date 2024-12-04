@@ -33,19 +33,6 @@ func (d *Dao) CreateIsAdmin(ctx context.Context, tx *sql.Tx, Isadmin bool, userI
 	return txQueries.CreateIsAdmin(ctx, arg)
 }
 
-func (d *Dao) CreateIsDeleted(ctx context.Context, tx *sql.Tx, Isadmin bool, userId string) error {
-	// トランザクション用のクエリを生成
-	txQueries := d.WithTx(tx)
-
-	arg := sqlc.CreateIsDeletedParams{
-		Isdeleted: Isadmin,
-		Userid:    userId,
-	}
-
-	// トランザクション内でクエリを実行
-	return txQueries.CreateIsDeleted(ctx, arg)
-}
-
 func (d *Dao) CreateIsPrivate(ctx context.Context, tx *sql.Tx, Isprivate bool, userId string) error {
 	// トランザクション用のクエリを生成
 	txQueries := d.WithTx(tx)
