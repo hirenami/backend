@@ -13,7 +13,7 @@ WHERE
     AND userId NOT IN (
         SELECT followerId FROM follows WHERE follows.followingId = ?
     )
-ORDER BY 
-    likes + 2 * retweets DESC, 
-    created_at DESC
+ORDER BY
+	created_at DESC,
+    likes + 2 * retweets DESC
 LIMIT 100;
