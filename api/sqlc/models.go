@@ -243,6 +243,6 @@ type User struct {
 	Biography   string    `json:"biography"`
 	Isprivate   bool      `json:"isprivate"`
 	Ispremium   bool      `json:"ispremium"`
-	Isdeleted   bool      `json:"isdeleted"`
+	Listingnum  int32     `json:"listingnum"`
 	Isadmin     bool      `json:"isadmin"`
 }

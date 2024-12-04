@@ -9,6 +9,6 @@ CREATE TABLE users (
   biography VARCHAR(1000) DEFAULT '' NOT NULL,
   isPrivate BOOLEAN NOT NULL DEFAULT false,
   isPremium BOOLEAN  NOT NULL DEFAULT false,
-  isDeleted BOOLEAN NOT NULL DEFAULT false,
+  listingnum INT NOT NULL DEFAULT 0,
   isAdmin BOOLEAN NOT NULL DEFAULT false
 );

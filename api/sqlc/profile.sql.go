@@ -58,7 +58,7 @@ func (q *Queries) CreateIconImage(ctx context.Context, arg CreateIconImageParams
 }
 
 const getProfile = `-- name: GetProfile :one
-SELECT firebaseuid, userid, username, created_at, header_image, icon_image, biography, isprivate, ispremium, isdeleted, isadmin FROM users WHERE userId = ?
+SELECT firebaseuid, userid, username, created_at, header_image, icon_image, biography, isprivate, ispremium, listingnum, isadmin FROM users WHERE userId = ?
 `
 
 func (q *Queries) GetProfile(ctx context.Context, userid string) (User, error) {
@@ -74,7 +74,7 @@ func (q *Queries) GetProfile(ctx context.Context, userid string) (User, error) {
 		&i.Biography,
 		&i.Isprivate,
 		&i.Ispremium,
-		&i.Isdeleted,
+		&i.Listingnum,
 		&i.Isadmin,
 	)
 	return i, err
