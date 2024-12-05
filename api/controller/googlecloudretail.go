@@ -107,7 +107,7 @@ func (c *Controller)handleImportProducts(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Google Cloud Retail APIにリクエストを送信
-	apiURL := "https://retail.googleapis.com/v2/projects/71857953091/locations/global/catalogs/default_catalog/branches/0/products:import"
+	apiURL := "https://retail.googleapis.com/v2/projects/71857953091/locations/global/catalogs/default_catalog/branches/1/products:import"
 	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(body))
 	if err != nil {
 		http.Error(w, "Failed to create request", http.StatusInternalServerError)
