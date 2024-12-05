@@ -38,7 +38,7 @@ func (c *Controller) searchProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 検索リクエストの作成
-	apiURL := "https://retail.googleapis.com/v2/projects/71857953091/locations/global/catalogs/default_catalog/placements/branch1_search:search"
+	apiURL := "https://retail.googleapis.com/v2/projects/71857953091/locations/global/catalogs/default_catalog/placements/default_search:search"
 	requestBody := map[string]interface{}{
 		"query":    query, // 検索クエリ（例: "*" すべての商品）
 		"visitorId": visitId, // ユーザーの訪問ID
