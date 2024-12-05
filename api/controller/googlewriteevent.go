@@ -9,6 +9,7 @@ import (
 	"time"
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2/google"
+	"io"
 )
 
 // UserEvent の構造体
@@ -53,7 +54,7 @@ func (c *Controller) writedata(w http.ResponseWriter, r *http.Request) {
 	apiURL := "https://retail.googleapis.com/v2/projects/71857953091/locations/global/catalogs/default_catalog/userEvents:write"
 	userEvent := UserEvent{
 		VisitorID: visitId,
-		EventType: "view-item",
+		EventType: "detail-page-view",
 		ProductDetails: []ProductDetail{
 			{ID: listingId},
 		},
@@ -61,6 +62,7 @@ func (c *Controller) writedata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body, err := json.Marshal(userEvent)
+	log.Printf("Request Body: %s", string(body))
 	if err != nil {
 		log.Println("Error marshaling request body:", err)
 		http.Error(w, "failed to marshal request body", http.StatusInternalServerError)
@@ -89,7 +91,9 @@ func (c *Controller) writedata(w http.ResponseWriter, r *http.Request) {
 
 	// ステータスコードに応じてレスポンスを返す
 	if resp.StatusCode != http.StatusOK {
-		http.Error(w, "Error in search response", resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		log.Printf("Error response from API: %s", string(bodyBytes))
+		http.Error(w, string(bodyBytes), resp.StatusCode)
 		return
 	}
 

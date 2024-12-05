@@ -25,19 +25,6 @@ func (u *Usecase) Initializing() *firebase.App {
 	clientCertURL := os.Getenv("CLIENT_X509_CERT_URL")
 	universe_domain := os.Getenv("UNIVERSE_DOMAIN")
 
-	log.Println("typeEnv: ", typeEnv)
-	log.Println("projectID: ", projectID)
-	log.Println("privateKeyID: ", privateKeyID)
-	log.Println("privateKey: ", privateKey)
-	log.Println("clientEmail: ", clientEmail)
-	log.Println("clientID: ", clientID)
-	log.Println("authURI: ", authURI)
-	log.Println("tokenURI: ", tokenURI)
-	log.Println("authProviderCertURL: ", authProviderCertURL)
-	log.Println("clientCertURL: ", clientCertURL)
-	log.Println("universe_domain: ", universe_domain)
-
-
 	// 必要な情報がすべて環境変数から取得できたかを確認
 	if typeEnv == "" || projectID == "" || privateKeyID == "" || privateKey == "" || clientEmail == ""  || clientID == "" || authURI == "" || tokenURI == "" || authProviderCertURL == "" || clientCertURL == "" || universe_domain == "" {
 		log.Println("Required environment variables are missing.")
