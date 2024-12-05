@@ -21,7 +21,9 @@ type UserEvent struct {
 }
 
 type ProductDetail struct {
-	ID string `json:"id"`
+	Product struct {
+		ID string `json:"id"` // "product" の中に "id" フィールドを含める
+	} `json:"product"`
 }
 
 func (c *Controller) writedata(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +58,13 @@ func (c *Controller) writedata(w http.ResponseWriter, r *http.Request) {
 		VisitorID: visitId,
 		EventType: "detail-page-view",
 		ProductDetails: []ProductDetail{
-			{ID: listingId},
+			{
+				Product: struct {
+					ID string `json:"id"`
+				}{
+					ID: listingId,
+				},
+			},
 		},
 		EventTime: time.Now().UTC().Format(time.RFC3339Nano), // 現在時刻を ISO 8601 形式で設定
 	}
