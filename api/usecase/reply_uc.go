@@ -17,11 +17,8 @@ func (u *Usecase) CreateReplyUsecase(ctx context.Context, userId, content, media
 	}
 
 	//バリデーション
-	if content == "" {
+	if content == "" && media_url == "" {
 		return errors.New("content is required")
-	}
-	if len(content) > 140 {
-		return errors.New("content is too long")
 	}
 	if bool, err := u.dao.IsUserExists(ctx, tx, userId); err != nil {
 		return err
