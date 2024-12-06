@@ -141,11 +141,6 @@ func (c *Controller) GetPredicts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 上位 5 件を返却
-	if len(mergedIds) > 5 {
-		mergedIds = mergedIds[:5]
-	}
-
 	// レスポンスとして返す
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
