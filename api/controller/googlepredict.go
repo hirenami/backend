@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"fmt"
 
 	"golang.org/x/oauth2/google"
 )
@@ -84,6 +85,10 @@ func (c *Controller) GetPredicts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to read response", http.StatusInternalServerError)
 		return
 	}
+
+	// 結果を表示
+	fmt.Println("Search Response:")
+	fmt.Println(string(respBody))
 
 	if resp.StatusCode != http.StatusOK {
 		http.Error(w, "Error in predict response", resp.StatusCode)
