@@ -45,7 +45,7 @@ func (c *Controller) GetPredicts(w http.ResponseWriter, r *http.Request) {
 	requestBody := map[string]interface{}{
 		"userEvent": map[string]interface{}{
 			"visitorId": visitId,
-			"eventType": "detail-page-view",
+			"eventType": "home-page-view",
 			"eventTime": time.Now().UTC().Format(time.RFC3339Nano),
 		},
 		"pageSize": 5,
