@@ -18,6 +18,7 @@ type TweetParams struct {
 type TweetParam struct {
 	Tweet    sqlc.Tweet `json:"tweet"`
 	User     sqlc.User  `json:"user"`
+	Quote   sqlc.Tweet `json:"quote"`
 	Likes    bool       `json:"likes"`
 	Retweets bool       `json:"retweets"`
 	Isblocked   bool      `json:"isblocked"`

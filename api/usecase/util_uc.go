@@ -3,6 +3,7 @@ package usecase
 import (
 	"api/dao"
 	"api/model"
+	"api/sqlc"
 	"context"
 	"database/sql"
 	"log"
@@ -122,6 +123,19 @@ func (u *Usecase) GetTweetParamUsecase(ctx context.Context, tx *sql.Tx, myId str
 		return model.TweetParam{}, err
 	}
 
+	var quote sqlc.Tweet
+	if(tweet.Isquote){
+		quote, err = u.dao.GetTweet(ctx, tx, tweet.Retweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return model.TweetParam{}, err
+		}
+	}else{
+		quote = sqlc.Tweet{}
+	}
+
 	// ツイートが「いいね」されているか確認
 	liked, err := u.dao.IsLiked(ctx, tx, myId, tweet.Tweetid)
 	if err != nil {
@@ -157,6 +171,7 @@ func (u *Usecase) GetTweetParamUsecase(ctx context.Context, tx *sql.Tx, myId str
 	tweetParamList := model.TweetParam{
 		Tweet:     tweet,
 		User:      user,
+		Quote:    quote,
 		Likes:     liked,
 		Retweets:  retweeted,
 		Isblocked: isblocked,
