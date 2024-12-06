@@ -6,23 +6,32 @@ import (
 )
 
 type TweetParams struct {
-	Tweet    sqlc.Tweet `json:"tweet"`
-	User     sqlc.User  `json:"user"`
-	Retweet  TweetParam `json:"retweet"`
-	Likes    bool       `json:"likes"`
-	Retweets bool       `json:"retweets"`
-	Isblocked   bool      `json:"isblocked"`
-	Isprivate   bool      `json:"isprivate"`
+	Tweet     sqlc.Tweet `json:"tweet"`
+	User      sqlc.User  `json:"user"`
+	Retweet   TweetParam `json:"retweet"`
+	Likes     bool       `json:"likes"`
+	Retweets  bool       `json:"retweets"`
+	Isblocked bool       `json:"isblocked"`
+	Isprivate bool       `json:"isprivate"`
 }
 
 type TweetParam struct {
-	Tweet    sqlc.Tweet `json:"tweet"`
-	User     sqlc.User  `json:"user"`
-	Quote   sqlc.Tweet `json:"quote"`
-	Likes    bool       `json:"likes"`
-	Retweets bool       `json:"retweets"`
-	Isblocked   bool      `json:"isblocked"`
-	Isprivate   bool      `json:"isprivate"`
+	Tweet     sqlc.Tweet `json:"tweet"`
+	User      sqlc.User  `json:"user"`
+	Quote     QuoteParam `json:"quote"`
+	Likes     bool       `json:"likes"`
+	Retweets  bool       `json:"retweets"`
+	Isblocked bool       `json:"isblocked"`
+	Isprivate bool       `json:"isprivate"`
+}
+
+type QuoteParam struct {
+	Tweet     sqlc.Tweet `json:"tweet"`
+	User      sqlc.User  `json:"user"`
+	Likes     bool       `json:"likes"`
+	Retweets  bool       `json:"retweets"`
+	Isblocked bool       `json:"isblocked"`
+	Isprivate bool       `json:"isprivate"`
 }
 
 type NotificationParams struct {
@@ -59,7 +68,7 @@ type User struct {
 	Biography   string    `json:"biography"`
 	Isprivate   bool      `json:"isprivate"`
 	Ispremium   bool      `json:"ispremium"`
-	Listingnum int32      `json:"listingnum"`
+	Listingnum  int32     `json:"listingnum"`
 	Isadmin     bool      `json:"isadmin"`
 }
 
@@ -88,16 +97,16 @@ type Conversation struct {
 }
 
 type ListingParams struct {
-	Listing  sqlc.Listing `json:"listing"`
-	User     sqlc.User    `json:"user"`
-	Tweet    sqlc.Tweet   `json:"tweet"`
+	Listing sqlc.Listing `json:"listing"`
+	User    sqlc.User    `json:"user"`
+	Tweet   sqlc.Tweet   `json:"tweet"`
 }
 
 type PurchaseParams struct {
 	Purchase sqlc.Purchase `json:"purchase"`
 	Listing  sqlc.Listing  `json:"listing"`
 	User     sqlc.User     `json:"user"`
-	Tweet	sqlc.Tweet    `json:"tweet"`
+	Tweet    sqlc.Tweet    `json:"tweet"`
 }
 
 type ListingDetails struct {
@@ -107,16 +116,16 @@ type ListingDetails struct {
 }
 
 type Listing struct {
-	Listingid        int64     `json:"listingid"`
-	Userid           string    `json:"userid"`
-	Tweetid          int32     `json:"tweetid"`
-	CreatedAt        time.Time `json:"created_at"`
-	Listingname      string    `json:"listingname"`
+	Listingid          int64     `json:"listingid"`
+	Userid             string    `json:"userid"`
+	Tweetid            int32     `json:"tweetid"`
+	CreatedAt          time.Time `json:"created_at"`
+	Listingname        string    `json:"listingname"`
 	Listingdescription string    `json:"listingdescription"`
-	Listingprice     int32     `json:"listingprice"`
-	Type             string    `json:"type"`
-	Stock            int32     `json:"stock"`
-	Condition        string    `json:"condition"`
+	Listingprice       int32     `json:"listingprice"`
+	Type               string    `json:"type"`
+	Stock              int32     `json:"stock"`
+	Condition          string    `json:"condition"`
 }
 
 type Purchase struct {

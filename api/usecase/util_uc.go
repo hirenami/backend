@@ -3,7 +3,6 @@ package usecase
 import (
 	"api/dao"
 	"api/model"
-	"api/sqlc"
 	"context"
 	"database/sql"
 	"log"
@@ -123,17 +122,60 @@ func (u *Usecase) GetTweetParamUsecase(ctx context.Context, tx *sql.Tx, myId str
 		return model.TweetParam{}, err
 	}
 
-	var quote sqlc.Tweet
+	var quote model.QuoteParam
 	if(tweet.Isquote){
-		quote, err = u.dao.GetTweet(ctx, tx, tweet.Retweetid)
+		quotetweet, err := u.dao.GetTweet(ctx, tx, tweet.Retweetid)
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
 			}
 			return model.TweetParam{}, err
 		}
+		quoteuser, err := u.dao.GetProfile(ctx, tx, quotetweet.Userid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return model.TweetParam{}, err
+		}
+		quoteislike ,err := u.dao.IsLiked(ctx, tx, myId, quotetweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return model.TweetParam{}, err
+		}
+		quoteretweeted, err := u.dao.IsRetweet(ctx, tx, myId, quotetweet.Tweetid)
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("ロールバック中にエラーが発生しました: %v", rbErr)
+			}
+			return model.TweetParam{}, err
+		}
+		isquoteblocked, err := u.dao.IsBlocked(ctx, tx, quotetweet.Userid, myId)
+		if err != nil {
+			tx.Rollback()
+			return model.TweetParam{}, err
+		}
+		isquotefollowing, err := u.dao.IsFollowing(ctx, tx, quotetweet.Userid, myId)
+		if err != nil {
+			tx.Rollback()
+			return model.TweetParam{}, err
+		}
+		isquoteprivate := !isquotefollowing && quoteuser.Isprivate && !(myId == quotetweet.Userid)
+		if isquoteblocked || isquoteprivate || quotetweet.Isdeleted {
+			return model.TweetParam{}, nil
+		}
+		quote = model.QuoteParam{
+			Tweet:     quotetweet,
+			User:      quoteuser,
+			Likes:     quoteislike,
+			Retweets:  quoteretweeted,
+			Isblocked: isquoteblocked,
+			Isprivate: isquoteprivate,
+		}
 	}else{
-		quote = sqlc.Tweet{}
+		quote = model.QuoteParam{}
 	}
 
 	// ツイートが「いいね」されているか確認
