@@ -58,3 +58,10 @@ func (d *Dao) UpdateListing (ctx context.Context,tx *sql.Tx, userId string) erro
 	return txQueries.UpdateListing(ctx, userId)
 }
 
+func (d *Dao) GetRandomListings (ctx context.Context,tx *sql.Tx) ([]int64, error) {
+	
+	txQueries := d.WithTx(tx)
+
+	return txQueries.GetRandomListings(ctx)
+}
+

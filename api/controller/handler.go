@@ -11,6 +11,7 @@ func SetupRoutes(controller *Controller) *mux.Router {
 	r.HandleFunc("/api/import-products", controller.handleImportProducts).Methods("POST","OPTIONS")
 	r.Handle("/api/search-products/{query}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.searchProducts))).Methods("GET","OPTIONS")
 	r.Handle("/api/write-event/{listingId}", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.writedata))).Methods("POST","OPTIONS")
+	r.Handle("/api/predict", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetPredicts))).Methods("POST","OPTIONS")	
 
 	r.Handle("/timeline", controller.FirebaseAuthMiddleware()(http.HandlerFunc(controller.GetTimelineCtrl))).Methods("GET","OPTIONS")
 

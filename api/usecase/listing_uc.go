@@ -248,3 +248,24 @@ func (u *Usecase) GetUserListingsUsecase(ctx context.Context, userid string) ([]
 
 	return res, nil
 }
+
+func (u *Usecase) GetRandomListingsUsecase (ctx context.Context) ([]int64, error) {
+	tx,err := u.dao.Begin()
+	if err != nil {
+		return []int64{}, err
+	}
+
+	listings, err := u.dao.GetRandomListings(ctx, tx)
+	if err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return []int64{}, err
+		}
+		return []int64{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return []int64{}, err
+	}
+
+	return listings, nil
+}

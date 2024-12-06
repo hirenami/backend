@@ -98,6 +98,36 @@ func (q *Queries) GetListingByTweet(ctx context.Context, tweetid int32) (Listing
 	return i, err
 }
 
+const getRandomListings = `-- name: GetRandomListings :many
+SELECT listingId 
+FROM listing
+ORDER BY RAND()
+LIMIT 5
+`
+
+func (q *Queries) GetRandomListings(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getRandomListings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var listingid int64
+		if err := rows.Scan(&listingid); err != nil {
+			return nil, err
+		}
+		items = append(items, listingid)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserListings = `-- name: GetUserListings :many
 SELECT listingid, userid, tweetid, created_at, listingname, listingdescription, ` + "`" + `condition` + "`" + `, listingprice, type, stock from listing
 WHERE userId = ?

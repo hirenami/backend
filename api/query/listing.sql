@@ -23,3 +23,9 @@ WHERE listingId = ?;
 UPDATE users
 SET listingnum = listingnum + 1
 WHERE userId = ?;
+
+-- name: GetRandomListings :many
+SELECT listingId 
+FROM listing
+ORDER BY RAND()
+LIMIT 5; -- ランダムに10件取得
