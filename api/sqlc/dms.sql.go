@@ -128,6 +128,7 @@ WHERE (
         senderId = ?
         AND receiverId = ?
     )
+ORDER BY createdAt ASC
 `
 
 type GetDmsParams struct {

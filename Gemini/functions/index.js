@@ -1,7 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
-const axios = require("axios");
+// const nodemailer = require("nodemailer");
+// const axios = require("axios");
 admin.initializeApp();
 
 exports.getUserInfo = functions.https.onRequest(async (req, res) => {
@@ -59,13 +59,13 @@ exports.getAllEmails = functions.https.onRequest(async (req, res) => {
 });
 
 // メール送信用の設定
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "7310wave@gmail.com",
-    pass: "jdcs pjwj xndr buec",
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: "7310wave@gmail.com",
+//     pass: "jdcs pjwj xndr buec",
+//   },
+// });
 
 // 全ての UID を取得して予測データを送信
 exports.sendPredictsByEmail = functions.https.onRequest(async () => {
@@ -81,27 +81,27 @@ exports.sendPredictsByEmail = functions.https.onRequest(async () => {
       }
       console.log(`UID ${uid} のメールアドレスは ${email} です。`);
       // UID に基づいてカスタムトークンを生成
-      const token = await admin.auth().createCustomToken(uid);
-      // Go サーバーの API 呼び出し
-      const response = await axios.get(
-          "https://backend-71857953091.us-central1.run.app/api/predict",
-          {
-            headers: {
-              "Authorization": `Bearer ${token}`, // トークンをヘッダーに含める
-              "Content-Type": "application/json",
-            },
-          },
-      );
-      const {productIds} = response.data;
-      // メールを送信
-      const mailOptions = {
-        from: "7310wave@gmail.com",
-        to: email,
-        subject: "予測結果",
-        text: `UID: ${uid}\n予測された商品ID: ${productIds.join(", ")}`,
-      };
-      await transporter.sendMail(mailOptions);
-      console.log(`メールを ${email} に送信しました。`);
+    //   const token = await admin.auth().createCustomToken(uid);
+    //   // Go サーバーの API 呼び出し
+    //   const response = await axios.get(
+    //       "https://backend-71857953091.us-central1.run.app/api/predict",
+    //       {
+    //         headers: {
+    //           "Authorization": `Bearer ${token}`, // トークンをヘッダーに含める
+    //           "Content-Type": "application/json",
+    //         },
+    //       },
+    //   );
+    //   const {productIds} = response.data;
+    //   // メールを送信
+    //   const mailOptions = {
+    //     from: "7310wave@gmail.com",
+    //     to: email,
+    //     subject: "予測結果",
+    //     text: `UID: ${uid}\n予測された商品ID: ${productIds.join(", ")}`,
+    //   };
+    //   await transporter.sendMail(mailOptions);
+    //   console.log(`メールを ${email} に送信しました。`);
     }
   } catch (error) {
     console.error("エラーが発生しました:", error);

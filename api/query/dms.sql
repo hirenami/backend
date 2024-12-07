@@ -21,7 +21,8 @@ WHERE (
     OR (
         senderId = ?
         AND receiverId = ?
-    );
+    )
+ORDER BY createdAt ASC;
 
 -- name: GetLastMessages :many
 SELECT *
