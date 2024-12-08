@@ -52,7 +52,6 @@ func (c *Controller) Gemini(w http.ResponseWriter, r *http.Request) {
 				"modelVersion": "preview",
 			},
 		},
-		"pageSize": 1, // 結果を1件だけ取得
 	}
 
 	// JSON に変換
